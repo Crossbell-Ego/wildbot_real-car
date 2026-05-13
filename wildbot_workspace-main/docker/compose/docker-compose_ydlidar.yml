@@ -1,0 +1,17 @@
+services:
+  ydlidar:
+    image: wildbot_workspace:latest
+    env_file:
+      - .env
+    devices:
+      - "/dev/usb_lidar:/dev/usb_lidar"
+    volumes:
+      - ../../workspaces:/workspaces
+    networks:
+      - my_bridge_network
+    command: >
+      bash -c "source /opt/ros/jazzy/setup.bash && source /workspaces/install/setup.bash && ros2 launch ydlidar_ros2_driver ydlidar_launch.py"
+
+networks:
+  my_bridge_network:
+    driver: bridge

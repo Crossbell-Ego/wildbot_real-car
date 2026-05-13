@@ -33,7 +33,7 @@ main() {
         echo "Starting services for $script..."
         $DOCKER_COMPOSE_COMMAND -f "$script" up -d
         SCRIPTS+=("$script")
-        $DOCKER_COMPOSE_COMMAND -f "$script" logs -f &
+        $DOCKER_COMPOSE_COMMAND -f "$script" logs -f | grep --line-buffered -Ei "error|fail|checksum" &
     done
 
     trap 'cleanup "${SCRIPTS[@]}"' SIGINT

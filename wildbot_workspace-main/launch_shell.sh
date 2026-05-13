@@ -67,7 +67,7 @@ docker run -it \
   $DEVICE_ARG \
   --group-add 20 \
   --env-file "./docker/compose/.env" \
-  -v "$(pwd)/workspaces:/workspaces" \
+  -v "$(pwd):/workspaces" \
   -v "$(pwd)/docker/compose/configs:/configs" \
   "$IMAGE_NAME" \
   bash

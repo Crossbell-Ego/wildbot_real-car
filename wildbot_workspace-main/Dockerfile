@@ -11,7 +11,10 @@ RUN cp -r ./workspaces/* /workspaces && \
     apt-get install -y --no-install-recommends \
         cmake pkg-config swig python3-pip git build-essential \
         ros-${ROS_DISTRO}-demo-nodes-py \
-        ros-${ROS_DISTRO}-demo-nodes-cpp && \
+        ros-${ROS_DISTRO}-demo-nodes-cpp \
+        ros-${ROS_DISTRO}-joy \
+        ros-${ROS_DISTRO}-cv-bridge \
+        python3-opencv && \
     # 安裝 YDLidar-SDK 並指定安裝到 /usr
     git clone https://github.com/YDLIDAR/YDLidar-SDK.git /tmp/YDLidar-SDK && \
     mkdir -p /tmp/YDLidar-SDK/build && \

@@ -1,7 +1,7 @@
 # Hardware configuration for kros_car.
 
 # Wheel motor settings
-wheel_port: /dev/usb_wheel
+wheel_port: /dev/ttyACM1
 wheel_baudrate: 115200
 wheel_motor_ids: 1,2,3,4
 wheel_motor_directions: 1,1,-1,-1
@@ -10,7 +10,7 @@ acceleration_act: 1
 wheel_joints: wheel_1_joint,wheel_2_joint,wheel_3_joint,wheel_4_joint
 
 # Arm servo settings
-arm_port: /dev/usb_robot_arm
+arm_port: /dev/ttyUSB0
 arm_baudrate: 115200
 arm_servo_ids: 1,2,3
 default_move_time_ms: 30

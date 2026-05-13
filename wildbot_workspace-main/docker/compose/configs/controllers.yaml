@@ -58,4 +58,19 @@ arm_controller:
       - velocity
     state_publish_rate: 15.0
     action_monitor_rate: 10.0
-    allow_partial_joints_goal: false
+    allow_partial_joints_goal: true
+
+    # 關節限制設定 (弧度 rad)
+    # 0 到 4.189 rad 對應伺服馬達的 0 到 1000 ticks
+    arm_1_joint:
+      has_position_limits: true
+      min_position: 0.0
+      max_position: 4.189
+    arm_2_joint:
+      has_position_limits: true
+      min_position: 0.0
+      max_position: 4.189
+    gripper_joint:
+      has_position_limits: true
+      min_position: 0.0
+      max_position: 4.189
