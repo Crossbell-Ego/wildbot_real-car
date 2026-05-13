@@ -11,6 +11,8 @@
 # Build artifacts
 .arduino-build/
 .arduino-data/
+.arduino-downloads/
+.arduino-user/
 build/
 bin/
 obj/
