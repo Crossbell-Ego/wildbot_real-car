@@ -100,7 +100,7 @@ docker run -it \
   --privileged \
   --network "$NETWORK_NAME" \
   --group-add 20 \
-  --env-file ./docker/compose/.env \
+  --env-file "./docker/compose/.env" \
   -v /dev:/dev \
   -v /dev/input:/dev/input \
   -v "$HOST_WORKSPACE":/workspaces \

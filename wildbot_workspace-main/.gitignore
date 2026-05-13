@@ -1,1 +1,3 @@
 .docker_build_hash
+workspaces/install/
+workspaces/log/
