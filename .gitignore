@@ -1,0 +1,25 @@
+# Images
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.webp
+*.ico
+
+# Build artifacts
+.arduino-build/
+.arduino-data/
+build/
+bin/
+obj/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS files
+.DS_Store
+Thumbs.db

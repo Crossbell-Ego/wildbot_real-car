@@ -1,2 +1,0 @@
-[console_scripts]
-yaw_hold_node = wildbot_control.yaw_hold_node:main
