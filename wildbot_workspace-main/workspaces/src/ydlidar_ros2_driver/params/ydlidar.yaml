@@ -7,8 +7,8 @@ ydlidar_ros2_driver_node:
     lidar_type: 0
     device_type: 0
     isSingleChannel: false
-    intensity: false
-    intensity_bit: 0
+    intensity: true
+    intensity_bit: 10
     sample_rate: 20
     abnormal_check_count: 4
     fixed_resolution: true
