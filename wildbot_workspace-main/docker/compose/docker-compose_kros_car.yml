@@ -1,0 +1,31 @@
+services:
+  kros_car:
+    image: ghcr.io/screamlab/wildbot_base_image:latest
+    privileged: true
+    device_cgroup_rules:
+      - 'c 13:* rwm'
+    env_file:
+      - .env
+    devices:
+      - "/dev/ttyACM0:/dev/ttyACM0"
+      - "/dev/ttyUSB1:/dev/ttyUSB1"
+      - "/dev/usb_wheel:/dev/usb_wheel"
+      - "/dev/usb_robot_arm:/dev/usb_robot_arm"
+    volumes:
+      - ./configs:/configs:ro
+      - /dev/input:/dev/input
+      - /home/robot/桌面/wildbot_photos:/photos
+      - /home/robot/桌面/wildbot_workspace-main:/workspaces
+    networks:
+      - my_bridge_network
+    command: >
+      bash -lc "apt update &&
+                apt install -y ros-jazzy-joy ros-jazzy-cv-bridge python3-opencv &&
+                ln -sf /dev/ttyACM0 /dev/usb_wheel &&
+                ln -sf /dev/ttyUSB0 /dev/usb_robot_arm &&
+                source /opt/ros/jazzy/setup.bash &&
+                ros2 launch kros_car bringup.launch.py"
+
+networks:
+  my_bridge_network:
+    driver: bridge

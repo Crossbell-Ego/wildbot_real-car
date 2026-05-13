@@ -1,0 +1,37 @@
+[0.413s] Invoking command in '/workspaces/imu_ws/src/wildbot_control': PYTHONPATH=/workspaces/imu_ws/build/wildbot_control/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/imu_ws/install/wildbot_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/wildbot_control build --build-base /workspaces/imu_ws/build/wildbot_control/build install --record /workspaces/imu_ws/build/wildbot_control/install.log --single-version-externally-managed install_data
+[0.516s] running egg_info
+[0.517s] creating ../../build/wildbot_control/wildbot_control.egg-info
+[0.522s] writing ../../build/wildbot_control/wildbot_control.egg-info/PKG-INFO
+[0.522s] writing dependency_links to ../../build/wildbot_control/wildbot_control.egg-info/dependency_links.txt
+[0.522s] writing entry points to ../../build/wildbot_control/wildbot_control.egg-info/entry_points.txt
+[0.522s] writing requirements to ../../build/wildbot_control/wildbot_control.egg-info/requires.txt
+[0.522s] writing top-level names to ../../build/wildbot_control/wildbot_control.egg-info/top_level.txt
+[0.522s] writing manifest file '../../build/wildbot_control/wildbot_control.egg-info/SOURCES.txt'
+[0.533s] reading manifest file '../../build/wildbot_control/wildbot_control.egg-info/SOURCES.txt'
+[0.533s] writing manifest file '../../build/wildbot_control/wildbot_control.egg-info/SOURCES.txt'
+[0.533s] running build
+[0.533s] running build_py
+[0.533s] creating /workspaces/imu_ws/build/wildbot_control/build
+[0.533s] creating /workspaces/imu_ws/build/wildbot_control/build/lib
+[0.534s] creating /workspaces/imu_ws/build/wildbot_control/build/lib/wildbot_control
+[0.534s] copying wildbot_control/__init__.py -> /workspaces/imu_ws/build/wildbot_control/build/lib/wildbot_control
+[0.534s] copying wildbot_control/yaw_hold_node.py -> /workspaces/imu_ws/build/wildbot_control/build/lib/wildbot_control
+[0.534s] running install
+[0.536s] running install_lib
+[0.542s] creating /workspaces/imu_ws/install/wildbot_control/lib/python3.12/site-packages/wildbot_control
+[0.542s] copying /workspaces/imu_ws/build/wildbot_control/build/lib/wildbot_control/__init__.py -> /workspaces/imu_ws/install/wildbot_control/lib/python3.12/site-packages/wildbot_control
+[0.542s] copying /workspaces/imu_ws/build/wildbot_control/build/lib/wildbot_control/yaw_hold_node.py -> /workspaces/imu_ws/install/wildbot_control/lib/python3.12/site-packages/wildbot_control
+[0.542s] byte-compiling /workspaces/imu_ws/install/wildbot_control/lib/python3.12/site-packages/wildbot_control/__init__.py to __init__.cpython-312.pyc
+[0.542s] byte-compiling /workspaces/imu_ws/install/wildbot_control/lib/python3.12/site-packages/wildbot_control/yaw_hold_node.py to yaw_hold_node.cpython-312.pyc
+[0.543s] running install_data
+[0.543s] creating /workspaces/imu_ws/install/wildbot_control/share/ament_index
+[0.543s] creating /workspaces/imu_ws/install/wildbot_control/share/ament_index/resource_index
+[0.543s] creating /workspaces/imu_ws/install/wildbot_control/share/ament_index/resource_index/packages
+[0.543s] copying resource/wildbot_control -> /workspaces/imu_ws/install/wildbot_control/share/ament_index/resource_index/packages
+[0.543s] copying package.xml -> /workspaces/imu_ws/install/wildbot_control/share/wildbot_control
+[0.543s] running install_egg_info
+[0.550s] Copying ../../build/wildbot_control/wildbot_control.egg-info to /workspaces/imu_ws/install/wildbot_control/lib/python3.12/site-packages/wildbot_control-0.0.0-py3.12.egg-info
+[0.551s] running install_scripts
+[0.595s] Installing yaw_hold_node script to /workspaces/imu_ws/install/wildbot_control/lib/wildbot_control
+[0.595s] writing list of installed files to '/workspaces/imu_ws/build/wildbot_control/install.log'
+[0.610s] Invoked command in '/workspaces/imu_ws/src/wildbot_control' returned '0': PYTHONPATH=/workspaces/imu_ws/build/wildbot_control/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/imu_ws/install/wildbot_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/wildbot_control build --build-base /workspaces/imu_ws/build/wildbot_control/build install --record /workspaces/imu_ws/build/wildbot_control/install.log --single-version-externally-managed install_data

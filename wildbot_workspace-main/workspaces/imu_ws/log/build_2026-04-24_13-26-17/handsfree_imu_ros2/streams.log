@@ -1,0 +1,21 @@
+[0.457s] Invoking command in '/workspaces/imu_ws/src/handsfree_imu_ros2': PYTHONPATH=/workspaces/imu_ws/build/handsfree_imu_ros2/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/imu_ws/install/handsfree_imu_ros2/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/handsfree_imu_ros2 build --build-base /workspaces/imu_ws/build/handsfree_imu_ros2/build install --record /workspaces/imu_ws/build/handsfree_imu_ros2/install.log --single-version-externally-managed install_data
+[0.573s] running egg_info
+[0.578s] writing ../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/PKG-INFO
+[0.578s] writing dependency_links to ../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/dependency_links.txt
+[0.579s] writing entry points to ../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/entry_points.txt
+[0.579s] writing requirements to ../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/requires.txt
+[0.579s] writing top-level names to ../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/top_level.txt
+[0.590s] reading manifest file '../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/SOURCES.txt'
+[0.591s] writing manifest file '../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/SOURCES.txt'
+[0.591s] running build
+[0.591s] running build_py
+[0.591s] running install
+[0.594s] running install_lib
+[0.601s] running install_data
+[0.601s] running install_egg_info
+[0.607s] removing '/workspaces/imu_ws/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree_imu_ros2-0.0.0-py3.12.egg-info' (and everything under it)
+[0.607s] Copying ../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info to /workspaces/imu_ws/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree_imu_ros2-0.0.0-py3.12.egg-info
+[0.608s] running install_scripts
+[0.656s] Installing imu_a9_node script to /workspaces/imu_ws/install/handsfree_imu_ros2/lib/handsfree_imu_ros2
+[0.657s] writing list of installed files to '/workspaces/imu_ws/build/handsfree_imu_ros2/install.log'
+[0.680s] Invoked command in '/workspaces/imu_ws/src/handsfree_imu_ros2' returned '0': PYTHONPATH=/workspaces/imu_ws/build/handsfree_imu_ros2/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/imu_ws/install/handsfree_imu_ros2/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/handsfree_imu_ros2 build --build-base /workspaces/imu_ws/build/handsfree_imu_ros2/build install --record /workspaces/imu_ws/build/handsfree_imu_ros2/install.log --single-version-externally-managed install_data
