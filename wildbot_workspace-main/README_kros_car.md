@@ -171,6 +171,25 @@ ros2 topic echo /joint_states
 ros2 topic echo /arm_joint_temperatures
 ```
 
+## Joystick Teleop
+
+The robot can be controlled using a joystick via the `joy_to_base_camera.py` script. The controls are configured for continuous movement when buttons are held.
+
+| Component | Control | Button/Axis | Description |
+|---|---|---|---|
+| **Drive** | Forward / Backward | Left Stick (Vertical) | Move robot front/back |
+| **Drive** | Rotate | Left Stick (Horizontal) | Rotate robot in place |
+| **Arm 1** | Up | **Y** (Button 4) | Raise the first joint |
+| **Arm 1** | Down | **A** (Button 0) | Lower the first joint |
+| **Arm 2** | Up | **X** (Button 3) | Raise the second joint |
+| **Arm 2** | Down | **B** (Button 1) | Lower the second joint |
+| **Gripper** | Open | **L2** (Button 8) | Open the gripper |
+| **Gripper** | Close | **R2** (Button 9) | Close the gripper |
+| **Camera** | Take Picture | **X** (Button 3) | Capture image to `/workspaces/photos` |
+
+> [!NOTE]
+> All arm and gripper movements are **incremental and continuous**. Holding the button will keep the joint moving until released or its limit is reached.
+
 ## Controllers
 
 Defined in `config/controllers.yaml` (update rate: 15 Hz):

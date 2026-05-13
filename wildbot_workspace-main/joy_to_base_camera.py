@@ -247,6 +247,30 @@ class JoyBaseCameraGripper(Node):
     # =========================
     # Gripper / Arm
     # =========================
+    def increment_arm_1(self, delta_rad):
+        if not self.arm_initialized:
+            return
+            
+        # arm_1 在 index 0
+        current = self.target_joint_positions[0]
+        new_val = max(0.0, min(4.189, current + delta_rad))
+        
+        if abs(new_val - current) > 0.001:
+            self.target_joint_positions[0] = new_val
+            self.send_arm_goal(self.target_joint_positions, move_time_sec=0.1)
+
+    def increment_arm_2(self, delta_rad):
+        if not self.arm_initialized:
+            return
+            
+        # arm_2 在 index 1
+        current = self.target_joint_positions[1]
+        new_val = max(0.0, min(4.189, current + delta_rad))
+        
+        if abs(new_val - current) > 0.001:
+            self.target_joint_positions[1] = new_val
+            self.send_arm_goal(self.target_joint_positions, move_time_sec=0.1)
+
     def increment_gripper(self, delta_rad):
         if not self.arm_initialized:
             return
@@ -315,21 +339,28 @@ class JoyBaseCameraGripper(Node):
 
         self.current_twist = twist
 
-        # A：夾爪全開
-        if self.button_pressed(msg, 0):
-            self.gripper_open()
+        # 偵錯用：印出按下的按鍵編號，方便確認 Y 鍵是幾號
+        for i, b in enumerate(msg.buttons):
+            if b == 1:
+                self.get_logger().warn(f"BUTTON PRESSED: {i}")
 
-        # B：保守夾取
-        if self.button_pressed(msg, 1):
-            self.gripper_half_close()
+        # Y (按鈕 4): 控制 joint 1 往上
+        if len(msg.buttons) > 4 and msg.buttons[4] == 1:
+            self.increment_arm_1(-0.05)
 
-        # X：拍照
-        if self.button_pressed(msg, 2):
-            self.take_picture()
+        # A (按鈕 0): 控制 joint 1 往下
+        if len(msg.buttons) > 0 and msg.buttons[0] == 1:
+            self.increment_arm_1(0.05)
 
-        # Y：接近閉合極限
-        if self.button_pressed(msg, 3):
-            self.gripper_safe_close()
+        # X (按鈕 2 或 3): 控制 joint 2 往上
+        if (len(msg.buttons) > 2 and msg.buttons[2] == 1) or (len(msg.buttons) > 3 and msg.buttons[3] == 1):
+            self.increment_arm_2(-0.05)
+            if self.button_pressed(msg, 2) or self.button_pressed(msg, 3):
+                self.take_picture()
+
+        # B (按鈕 1): 控制 joint 2 往下
+        if len(msg.buttons) > 1 and msg.buttons[1] == 1:
+            self.increment_arm_2(0.05)
 
         # L2 (按鈕 8)：按住持續打開
         if len(msg.buttons) > 8 and msg.buttons[8] == 1:
