@@ -1,46 +1,32 @@
-#!/usr/bin/python3
-# Copyright 2020, EAIBOT
-# Licensed under the Apache License, Version 2.0 (the "License");
-
-from ament_index_python.packages import get_package_share_directory
-
 from launch import LaunchDescription
-from launch_ros.actions import LifecycleNode
-from launch_ros.actions import Node
+from launch_ros.actions import Node 
+import os
+from launch.actions import IncludeLaunchDescription
+from launch.conditions import LaunchConfigurationEquals
+from launch.launch_description_sources import PythonLaunchDescriptionSource,AnyLaunchDescriptionSource
+from ament_index_python.packages import get_package_share_directory
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
-from launch.actions import LogInfo
-
-import lifecycle_msgs.msg
 import os
 
-
 def generate_launch_description():
-    share_dir = get_package_share_directory('ydlidar_ros2_driver')
-    parameter_file = LaunchConfiguration('params_file')
-    node_name = 'ydlidar_ros2_driver_node'
-
-    params_declare = DeclareLaunchArgument('params_file',
-                                           default_value=os.path.join(
-                                               share_dir, 'params', 'ydlidar.yaml'),
-                                           description='FPath to the ROS2 parameters file to use.')
-
-    driver_node = LifecycleNode(package='ydlidar_ros2_driver',
-                                executable='ydlidar_ros2_driver_node',
-                                name='ydlidar_ros2_driver_node',
-                                output='screen',
-                                emulate_tty=True,
-                                parameters=[parameter_file],
-                                namespace='',
-                                )
-    tf2_node = Node(package='tf2_ros',
-                    executable='static_transform_publisher',
-                    name='static_tf_pub_laser',
-                    arguments=['0', '0', '0.02','0', '0', '0', '1','base_link','laser_frame'],
-                    )
-
-    return LaunchDescription([
-        params_declare,
-        driver_node,
-        tf2_node,
+	LIDAR_TYPE = os.getenv('LIDAR_TYPE')
+	print("my_lidar:",LIDAR_TYPE)
+	lidar_type_arg = DeclareLaunchArgument(name='lidar_type', default_value=LIDAR_TYPE, 
+                                              description='The type of lidar')
+	lidar_x3_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
+        [os.path.join(get_package_share_directory('ydlidar_ros2_driver'), 'launch'),
+        '/x3_ydlidar_launch.py']),
+         condition=LaunchConfigurationEquals('lidar_type', 'x3')
+    )
+	lidar_4ros_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
+        [os.path.join(get_package_share_directory('ydlidar_ros2_driver'), 'launch'),
+        '/4ros_ydlidar_launch.py']),
+         condition=LaunchConfigurationEquals('lidar_type', '4ros')
+    )
+	
+	return LaunchDescription([
+        lidar_type_arg,
+        lidar_x3_launch,
+        lidar_4ros_launch
     ])
+

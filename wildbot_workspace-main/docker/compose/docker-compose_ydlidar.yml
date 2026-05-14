@@ -3,14 +3,14 @@ services:
     image: wildbot_workspace:latest
     env_file:
       - .env
-    devices:
-      - "/dev/usb_lidar:/dev/usb_lidar"
     volumes:
+      - /dev:/dev
       - ../../workspaces:/workspaces
     networks:
       - my_bridge_network
+    privileged: true
     command: >
-      bash -c "source /opt/ros/jazzy/setup.bash && source /workspaces/install/setup.bash && ros2 launch ydlidar_ros2_driver ydlidar_launch.py"
+      bash -c "source /opt/ros/jazzy/setup.bash && source /workspaces/install/setup.bash && ros2 launch ydlidar_ros2_driver ydlidar_launch.py lidar_type:=4ros"
 
 networks:
   my_bridge_network:

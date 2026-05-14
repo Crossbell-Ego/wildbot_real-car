@@ -1,0 +1,23 @@
+/**:
+  ros__parameters:
+    port: /dev/serial/by-path/pci-0000:62:00.0-usb-0:2:1.0-port0
+    frame_id: laser
+    ignore_array: ""
+    baudrate: 512000
+    lidar_type: 0
+    device_type: 0
+    sample_rate: 20
+    abnormal_check_count: 4
+    fixed_resolution: true
+    reversion: true
+    inverted: true
+    auto_reconnect: true
+    isSingleChannel: false
+    intensity: true
+    support_motor_dtr: false
+    angle_max: 180.0
+    angle_min: -180.0
+    range_max: 64.0
+    range_min: 0.01
+    frequency: 10.0
+    invalid_range_is_inf: false

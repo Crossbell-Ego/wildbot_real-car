@@ -1,67 +1,54 @@
-# YDLIDAR 4ROS (TG30) ROS 2 Jazzy 使用指南
+# YDLIDAR 4ROS (TG30) ROS 2 Jazzy 使用指南 (2026-05-14 更新)
 
 本文件記錄了 YDLIDAR 4ROS 雷達在 Wildbot 小車 (ROS 2 Jazzy / Ubuntu 24.04) 環境下的配置與修正說明。
 
-## 1. 硬體連接與設備別名 (udev)
+## 1. 硬體連接與設備別名 (物理路徑綁定)
 
-雷達預設被系統識別為 `/dev/ttyUSBx`，為了穩定性，我們使用了別名 `/dev/usb_lidar`。
+由於 Wildbot 使用的雷達與 IMU 晶片相同 (CP2102)，傳統的 Vendor/Product ID 綁定會失效。我們採用 **物理插槽路徑 (USB Path)** 進行鎖定。
 
-*   **確認設備存在**：
-    ```bash
-    ls -l /dev/usb_lidar
-    ```
-    *(應顯示指向某個 ttyUSB 設備的連結)*
+*   **雷達物理路徑**：`pci-0000:62:00.0-usb-0:2:1.0-port0` (對應 `/dev/usb_lidar`)
+*   **IMU 物理路徑**：`pci-0000:68:00.0-usb-0:2:1.0-port0` (對應 `/dev/imu_a9`)
 
-## 2. ROS 2 Jazzy 相容性修正 (核心改動)
+### 修正後的 udev 規則 (/etc/udev/rules.d/10-wildbot.rules)：
+```bash
+SUBSYSTEM=="tty", ENV{ID_PATH}=="pci-0000:62:00.0-usb-0:2:1.0", MODE="0666", SYMLINK+="usb_lidar"
+SUBSYSTEM=="tty", ENV{ID_PATH}=="pci-0000:68:00.0-usb-0:2:1.0", MODE="0666", SYMLINK+="imu_a9"
+```
 
-原廠驅動程式是針對較舊的 ROS 2 版本編寫，在 Jazzy 版本中會遇到以下錯誤，我們已完成修正：
+## 2. Docker 環境配置 (關鍵)
 
-### A. 參數宣告修正 (C++)
-在 `ydlidar_ros2_driver_node.cpp` 中，Jazzy 嚴格要求參數必須提供 **範本類型 (Template Type)**。
-*   **修正前**：`node->declare_parameter("port", "/dev/ydlidar");`
-*   **修正後**：`node->declare_parameter<std::string>("port", "/dev/ydlidar");`
+在 Docker 中運行高波特率 (512000) 的雷達，必須具備以下條件：
 
-### B. Launch 檔案語法修正 (Python)
-Jazzy 的 Launch 系統更改了參數名稱。
-*   `node_executable` ➔ `executable`
-*   `node_name` ➔ `name`
-*   `node_namespace` ➔ `namespace`
+1.  **特權模式 (Privileged)**：必須在 `docker-compose.yml` 加入 `privileged: true`，否則會出現大量的 `Checksum error`。
+2.  **硬體映射**：推薦使用物理路徑映射，確保容器內外的設備對應永不漂移。
 
-## 3. 雷達參數調校 (`ydlidar.yaml`)
+## 3. ROS 2 Jazzy 相容性修正
 
-針對 **YDLIDAR 4ROS (TG30)**，必須使用以下關鍵參數才能成功啟動：
+1.  **C++ 修正**：`declare_parameter` 必須帶有類型範本，例如 `node->declare_parameter<std::string>(...)`。
+2.  **Launch 修正**：`LifecycleNode` 的建構子參數已由 `node_name` 改為 `name`。
+
+## 4. 雷達最佳參數設定 (`ydlidar_4ros.yaml`)
+
+針對 **TG30** 型號，請務必使用以下配置：
 
 | 參數 | 設定值 | 說明 |
 | :--- | :--- | :--- |
-| `port` | `/dev/usb_lidar` | 序列埠路徑 |
-| `baudrate` | `512000` | 4ROS/TG系列通訊波特率 |
-| `lidar_type` | `0` | **重要**：0 代表 TOF 序列埠模式 (2 是網路模式) |
-| `intensity` | `false` | 關閉光強解析以避免 Checksum 錯誤 |
-| `fixed_resolution` | `false` | 關閉固定解析度，允許點數動態浮動 |
-| `sample_rate` | `20` | 20kHz 採樣頻率 |
+| `port` | `/dev/usb_lidar` | 鎖定後的序列埠路徑 |
+| `baudrate` | `512000` | 標準通訊波特率 |
+| `lidar_type` | `0` | TOF 模式 (不要設為 1，否則 SDK 會報錯) |
+| `sample_rate` | `20` | 原生採樣率 20kHz |
+| `intensity` | `true` | **必填**：TG30 會發送 16-bit 強度數據，不開啟會導致校驗錯誤 |
+| `frequency` | `10.0` | 標準掃描頻率 10Hz |
 
-## 4. 啟動方式
+## 5. 常見錯誤診斷
 
-### 方法 A：手動調試啟動 (互動模式)
-進入容器並手動執行：
-```bash
-sudo ./launch_shell.sh
-# 進入容器後
-source /workspaces/install/setup.bash
-ros2 launch ydlidar_ros2_driver ydlidar_launch.py
-```
-
-### 方法 B：全機自動啟動 (背景模式)
-直接在主機執行：
-```bash
-sudo ./scripts/00_start_all.sh
-```
-
-## 5. 常見問題排除
-
-*   **Checksum error**：如果出現大量校驗錯誤，請檢查 `baudrate` 是否為 `512000`，且 `intensity` 必須與硬體實際輸出相符。
-*   **Cannot bind to IP Address**：代表 `lidar_type` 被誤設為 `2` (網路模式)，請改回 `0`。
-*   **Real points > fixed points**：代表雷達回傳點數超過預期，請將 `fixed_resolution` 設為 `false`。
+*   **Checksum error**：
+    *   檢查是否開啟了 `privileged: true`。
+    *   檢查 `intensity` 是否設為 `true`。
+    *   物理檢查：確認 USB 補電線是否有插在外部 5V 電源上，電力不足會導致資料毀損。
+*   **Cannot bind to serial port**：
+    *   檢查 `/dev/usb_lidar` 是否正確指向雷達而非 IMU。
+    *   確認沒有其他容器正在運行並佔用同一個埠口。
 
 ---
-*文件更新日期：2026-05-13*
+*文件更新日期：2026-05-14 (Debug 成功版本)*

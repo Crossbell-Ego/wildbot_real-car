@@ -6,12 +6,9 @@ services:
       - 'c 13:* rwm'
     env_file:
       - .env
-    devices:
-      - "/dev/ttyACM1:/dev/ttyACM1"
-      - "/dev/ttyUSB0:/dev/ttyUSB0"
-      - "/dev/usb_wheel:/dev/usb_wheel"
-      - "/dev/usb_robot_arm:/dev/usb_robot_arm"
     volumes:
+      - /dev/usb_wheel:/dev/usb_wheel
+      - /dev/usb_robot_arm:/dev/usb_robot_arm
       - ./configs:/configs:ro
       - /dev/input:/dev/input
       - /home/robot/桌面/wildbot_photos:/photos
