@@ -5,5 +5,4 @@ main \
     "$COMPOSE_DIR/docker-compose_rosbridge_server.yml" \
     "$COMPOSE_DIR/docker-compose_camera_gemini.yml" \
     "$COMPOSE_DIR/docker-compose_lidar_pkg.yml" \
-    "$COMPOSE_DIR/docker-compose_ydlidar.yml" \
-    "$COMPOSE_DIR/docker-compose_slam.yml"
+    "$COMPOSE_DIR/docker-compose_ydlidar.yml"
