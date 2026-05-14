@@ -9,6 +9,8 @@ services:
     volumes:
       - /dev/usb_wheel:/dev/usb_wheel
       - /dev/usb_robot_arm:/dev/usb_robot_arm
+      - /dev/imu_a9:/dev/imu_a9
+      - /dev/usb_lidar:/dev/usb_lidar
       - ./configs:/configs:ro
       - /dev/input:/dev/input
       - /home/robot/桌面/wildbot_photos:/photos
@@ -47,6 +49,19 @@ services:
     command: >
       bash -lc "source /opt/ros/jazzy/setup.bash &&
                 python3 /workspaces/joy_to_base_camera.py"
+
+  imu_driver:
+    image: wildbot_workspace:latest
+    privileged: true
+    volumes:
+      - /dev/imu_a9:/dev/imu_a9
+      - /home/robot/wildbot_real car/wildbot_workspace-main:/workspaces
+    networks:
+      - my_bridge_network
+    command: >
+      bash -lc "source /opt/ros/jazzy/setup.bash &&
+                source /workspaces/workspaces/imu_ws/install/setup.bash &&
+                ros2 run handsfree_imu_ros2 imu_a9_data_node --ros-args -p port:=/dev/imu_a9 -p baud:=921600"
 
 networks:
   my_bridge_network:

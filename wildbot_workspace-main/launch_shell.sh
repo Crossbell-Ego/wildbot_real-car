@@ -43,20 +43,13 @@ if ! docker network inspect "$NETWORK_NAME" &>/dev/null; then
     "$NETWORK_NAME"
 fi
 
-# 檢查設備是否存在，避免掛載失敗
+# 自動掃描並掛載所有相關設備 (ttyUSB, ttyACM, usb_*)
 DEVICE_ARG=""
-if [ -e "/dev/imu_a9" ]; then
-  DEVICE_ARG="$DEVICE_ARG --device=/dev/imu_a9:/dev/imu_a9"
-fi
-
-# 掛載雷達設備 (新增對 usb_lidar 的支援)
-if [ -e "/dev/usb_lidar" ]; then
-  DEVICE_ARG="$DEVICE_ARG --device=/dev/usb_lidar:/dev/usb_lidar"
-elif [ -e "/dev/ydlidar" ]; then
-  DEVICE_ARG="$DEVICE_ARG --device=/dev/ydlidar:/dev/ydlidar"
-elif [ -e "/dev/ttyUSB0" ]; then
-  DEVICE_ARG="$DEVICE_ARG --device=/dev/ttyUSB0:/dev/ttyUSB0"
-fi
+for dev in /dev/ttyUSB* /dev/ttyACM* /dev/usb_* /dev/imu_a9 /dev/ydlidar; do
+  if [ -e "$dev" ]; then
+    DEVICE_ARG="$DEVICE_ARG --device=$dev:$dev"
+  fi
+done
 
 # 啟動
 echo "[wildbot] starting container..."

@@ -1,0 +1,5 @@
+# 將插在 USB 埠位 1-2 的裝置定義為 imu_a9
+KERNEL=="ttyUSB*", KERNELS=="1-2:1.0", SYMLINK+="imu_a9", MODE="0666"
+
+# 將插在 USB 埠位 5-2 的裝置定義為 usb_lidar (ydlidar)
+KERNEL=="ttyUSB*", KERNELS=="5-2:1.0", SYMLINK+="usb_lidar", SYMLINK+="ydlidar", MODE="0666"

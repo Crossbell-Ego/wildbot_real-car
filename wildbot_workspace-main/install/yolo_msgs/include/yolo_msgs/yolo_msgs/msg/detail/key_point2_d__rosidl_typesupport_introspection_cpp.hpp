@@ -1,0 +1,1 @@
+/workspaces/build/yolo_msgs/rosidl_typesupport_introspection_cpp/yolo_msgs/msg/detail/key_point2_d__rosidl_typesupport_introspection_cpp.hpp

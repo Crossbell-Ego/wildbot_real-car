@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
               'imu_a9_node = handsfree_imu_ros2.imu_a9_node:main',
+              'imu_a9_data_node = handsfree_imu_ros2.imu_data_node:main',
         ],
     },
 )

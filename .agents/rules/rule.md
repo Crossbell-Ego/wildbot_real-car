@@ -2,7 +2,9 @@
 trigger: always_on
 ---
 
-## 🤖 Wildbot 開發與操作核心準則
+## 🤖 Wildbot 實體小車開發與操作核心準則
+
+使用 ros2 jazzy 版本
 
 ### 1. 硬體設備映射規則 (USB Device Mapping)
 

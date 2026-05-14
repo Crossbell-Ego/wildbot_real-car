@@ -1,0 +1,1 @@
+/workspaces/build/yolo_msgs/rosidl_typesupport_fastrtps_c/yolo_msgs/msg/detail/mask__rosidl_typesupport_fastrtps_c.h

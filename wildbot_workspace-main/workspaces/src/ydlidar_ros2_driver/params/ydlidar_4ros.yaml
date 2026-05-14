@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    port: /dev/serial/by-path/pci-0000:62:00.0-usb-0:2:1.0-port0
+    port: /dev/usb_lidar
     frame_id: laser
     ignore_array: ""
     baudrate: 512000

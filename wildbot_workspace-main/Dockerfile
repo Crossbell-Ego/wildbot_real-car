@@ -14,6 +14,8 @@ RUN cp -r ./workspaces/* /workspaces && \
         ros-${ROS_DISTRO}-demo-nodes-cpp \
         ros-${ROS_DISTRO}-joy \
         ros-${ROS_DISTRO}-cv-bridge \
+        ros-${ROS_DISTRO}-slam-toolbox \
+        ros-${ROS_DISTRO}-nav2-map-server \
         python3-opencv && \
     # 安裝 YDLidar-SDK 並指定安裝到 /usr
     git clone https://github.com/YDLIDAR/YDLidar-SDK.git /tmp/YDLidar-SDK && \
@@ -40,6 +42,9 @@ RUN source /opt/ros/${ROS_DISTRO}/setup.bash && \
 RUN rm -rf /tmp/* && \
     rm -rf /temp/* && \
     rm -rf /var/lib/apt/lists/*
+
+# 加入快捷鍵 'r' 用於快速編譯
+RUN echo "alias r='colcon build --symlink-install && source install/setup.bash'" >> /root/.bashrc
 
 
 ENTRYPOINT ["/ros_entrypoint.bash"]

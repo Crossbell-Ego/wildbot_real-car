@@ -1,0 +1,1 @@
+/workspaces/build/yolo_msgs/rosidl_generator_cpp/yolo_msgs/msg/bounding_box2_d.hpp
