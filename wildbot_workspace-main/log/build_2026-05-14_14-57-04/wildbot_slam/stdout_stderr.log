@@ -1,0 +1,37 @@
+-- The C compiler identification is GNU 13.3.0
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 2.5.5 (/opt/ros/jazzy/share/ament_cmake/cmake)
+-- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter 
+-- Configuring done (0.5s)
+-- Generating done (0.0s)
+-- Build files have been written to: /workspaces/build/wildbot_slam
+-- Install configuration: ""
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/config
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/config/mapper_params_online_async.yaml
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/launch
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/launch/slam_launch.py
+-- Installing: /workspaces/install/wildbot_slam/share/ament_index/resource_index/package_run_dependencies/wildbot_slam
+-- Installing: /workspaces/install/wildbot_slam/share/ament_index/resource_index/parent_prefix_path/wildbot_slam
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/environment/ament_prefix_path.sh
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/environment/ament_prefix_path.dsv
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/environment/path.sh
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/environment/path.dsv
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/local_setup.bash
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/local_setup.sh
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/local_setup.zsh
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/local_setup.dsv
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/package.dsv
+-- Installing: /workspaces/install/wildbot_slam/share/ament_index/resource_index/packages/wildbot_slam
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/cmake/wildbot_slamConfig.cmake
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/cmake/wildbot_slamConfig-version.cmake
+-- Installing: /workspaces/install/wildbot_slam/share/wildbot_slam/package.xml

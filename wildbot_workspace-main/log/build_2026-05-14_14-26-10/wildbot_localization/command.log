@@ -1,0 +1,6 @@
+Invoking command in '/workspaces/build/wildbot_localization': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake /workspaces/workspaces/src/wildbot_localization -DCMAKE_INSTALL_PREFIX=/workspaces/install/wildbot_localization
+Invoked command in '/workspaces/build/wildbot_localization' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake /workspaces/workspaces/src/wildbot_localization -DCMAKE_INSTALL_PREFIX=/workspaces/install/wildbot_localization
+Invoking command in '/workspaces/build/wildbot_localization': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake --build /workspaces/build/wildbot_localization -- -j16 -l16
+Invoked command in '/workspaces/build/wildbot_localization' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake --build /workspaces/build/wildbot_localization -- -j16 -l16
+Invoking command in '/workspaces/build/wildbot_localization': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake --install /workspaces/build/wildbot_localization
+Invoked command in '/workspaces/build/wildbot_localization' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/jazzy /usr/bin/cmake --install /workspaces/build/wildbot_localization

@@ -1,0 +1,1 @@
+/workspaces/build/wildbot_slam/ament_cmake_environment_hooks/local_setup.bash

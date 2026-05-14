@@ -1,32 +1,46 @@
-from launch import LaunchDescription
-from launch_ros.actions import Node 
-import os
-from launch.actions import IncludeLaunchDescription
-from launch.conditions import LaunchConfigurationEquals
-from launch.launch_description_sources import PythonLaunchDescriptionSource,AnyLaunchDescriptionSource
+#!/usr/bin/python3
+# Copyright 2020, EAIBOT
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from ament_index_python.packages import get_package_share_directory
+
+from launch import LaunchDescription
+from launch_ros.actions import LifecycleNode
+from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 import os
+
 
 def generate_launch_description():
-	LIDAR_TYPE = os.getenv('LIDAR_TYPE')
-	print("my_lidar:",LIDAR_TYPE)
-	lidar_type_arg = DeclareLaunchArgument(name='lidar_type', default_value=LIDAR_TYPE, 
-                                              description='The type of lidar')
-	lidar_x3_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
-        [os.path.join(get_package_share_directory('ydlidar_ros2_driver'), 'launch'),
-        '/x3_ydlidar_launch.py']),
-         condition=LaunchConfigurationEquals('lidar_type', 'x3')
-    )
-	lidar_4ros_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(
-        [os.path.join(get_package_share_directory('ydlidar_ros2_driver'), 'launch'),
-        '/4ros_ydlidar_launch.py']),
-         condition=LaunchConfigurationEquals('lidar_type', '4ros')
-    )
-	
-	return LaunchDescription([
-        lidar_type_arg,
-        lidar_x3_launch,
-        lidar_4ros_launch
-    ])
+    share_dir = get_package_share_directory('ydlidar_ros2_driver')
+    parameter_file = LaunchConfiguration('params_file')
 
+    params_declare = DeclareLaunchArgument('params_file',
+                                           default_value=os.path.join(
+                                               share_dir, 'params', 'ydlidar.yaml'),
+                                           description='Path to the ROS2 parameters file to use.')
+
+    driver_node = LifecycleNode(package='ydlidar_ros2_driver',
+                                executable='ydlidar_ros2_driver_node',
+                                name='ydlidar_ros2_driver_node',
+                                output='screen',
+                                emulate_tty=True,
+                                parameters=[parameter_file],
+                                namespace='/',
+                                )
+
+    return LaunchDescription([
+        params_declare,
+        driver_node,
+    ])

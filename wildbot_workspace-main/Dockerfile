@@ -16,6 +16,7 @@ RUN cp -r ./workspaces/* /workspaces && \
         ros-${ROS_DISTRO}-cv-bridge \
         ros-${ROS_DISTRO}-slam-toolbox \
         ros-${ROS_DISTRO}-nav2-map-server \
+        ros-${ROS_DISTRO}-robot-localization \
         python3-opencv && \
     # 安裝 YDLidar-SDK 並指定安裝到 /usr
     git clone https://github.com/YDLIDAR/YDLidar-SDK.git /tmp/YDLidar-SDK && \

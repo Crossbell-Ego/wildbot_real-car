@@ -15,10 +15,11 @@ services:
       - /dev/input:/dev/input
       - /home/robot/桌面/wildbot_photos:/photos
       - /home/robot/wildbot_real car/wildbot_workspace-main:/workspaces
+      - /home/robot/wildbot_real car/wildbot_workspace-main/workspaces/kros_car_persistent.xacro:/robot_ws/src/wildbot-car-description/urdf/kros_car.xacro
     networks:
       - my_bridge_network
     command: >
-      bash -lc "source /opt/ros/jazzy/setup.bash &&
+      bash -c "source /opt/ros/jazzy/setup.bash &&
                 ros2 launch kros_car bringup.launch.py"
 
   joy_driver:
@@ -59,9 +60,22 @@ services:
     networks:
       - my_bridge_network
     command: >
-      bash -lc "source /opt/ros/jazzy/setup.bash &&
+      bash -c "source /opt/ros/jazzy/setup.bash &&
                 source /workspaces/workspaces/imu_ws/install/setup.bash &&
                 ros2 run handsfree_imu_ros2 imu_a9_data_node --ros-args -p port:=/dev/imu_a9 -p baud:=921600"
+
+  localization_ekf:
+    image: wildbot_workspace:latest
+    volumes:
+      - /home/robot/wildbot_real car/wildbot_workspace-main:/workspaces
+    networks:
+      - my_bridge_network
+    depends_on:
+      - kros_car
+    command: >
+      bash -c "source /opt/ros/jazzy/setup.bash &&
+                source /workspaces/install/setup.bash &&
+                ros2 launch wildbot_localization ekf_launch.py"
 
 networks:
   my_bridge_network:

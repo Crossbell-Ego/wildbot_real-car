@@ -16,6 +16,8 @@
 build/
 bin/
 obj/
+frames*.pdf
+frames*.gv
 
 # Python
 __pycache__/

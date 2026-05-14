@@ -1,0 +1,15 @@
+services:
+  slam_toolbox:
+    image: wildbot_workspace:latest
+    volumes:
+      - /home/robot/wildbot_real car/wildbot_workspace-main:/workspaces
+    networks:
+      - compose_my_bridge_network
+    command: >
+      bash -c "source /opt/ros/jazzy/setup.bash &&
+                source /workspaces/install/setup.bash &&
+                ros2 launch wildbot_slam slam_launch.py"
+
+networks:
+  compose_my_bridge_network:
+    external: true

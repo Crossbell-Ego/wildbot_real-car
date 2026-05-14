@@ -93,6 +93,53 @@ graph TD
 
 ---
 
-**後續開發建議：**
 
-當你在測試 YDLIDAR 或其他新硬體時，請先在 `launch_shell.sh` 環境下完成 `colcon build` 與節點測試。確認 `/dev/usb_lidar` 能正確讀取數據後，我們再將對應的 Launch 指令整合進 `docker-compose.yml` 中，由 `00_start_all.sh` 統一管理。
+### 1. 機器人控制 (Robot Control)
+
+- **手臂控制 (`/arm_controller`)**:
+- `/arm_controller/controller_state`: 手臂控制器的當前狀態。
+- `/arm_controller/joint_trajectory`: 手臂關節控制的路徑/軌跡。
+- `/arm_controller/transition_event`: 控制器狀態切換事件。
+- **底盤控制 (`/base_controller`)**:
+- `/base_controller/cmd_vel`: 控制底盤移動的速度指令（Linear/Angular）。
+- `/base_controller/odom`: 底盤的里程計數據（位置與速度估計）。
+- `/base_controller/transition_event`: 底盤控制器狀態切換事件。
+- **控制器管理 (`/controller_manager`)**: 包含 `activity`、`introspection_data` (名稱/數值) 與 `statistics` (全量/名稱/數值)，用於監控所有硬體控制器的運行狀況。
+
+### 2. 相機感測器 (Camera Sensors)
+
+- **彩色影像 (`/camera/color`)**: 包含原始影像 (`image_raw`)、相機參數 (`camera_info`)，以及多種壓縮格式（Compressed, CompressedDepth, Theora, Zstd）。
+- **深度影像 (`/camera/depth`)**: 包含深度圖、點雲數據 (`points`) 以及對應的壓縮格式與參數。
+- **紅外線影像 (`/camera/ir`)**: 紅外線原始影像與相關參數。
+- **對齊與過濾**:
+- `/camera/depth_to_color` / `/camera/depth_to_ir`: 深度圖與其他影像的對齊資訊。
+- `/camera/depth_filter_status`: 深度濾波器的運行狀態。
+
+### 3. 其他感測器數據 (Other Sensors)
+
+- **雷達掃描 (`/scan`, `/scan_tmp`)**: 2D 激光雷達 (LiDAR) 的掃描數據。
+- **慣性測量 (`/imu/data`)**: 機器人的姿勢、加速度與角速度資訊。
+- **溫度監控 (`/arm_joint_temperatures`)**: 手臂各個關節的實時溫度。
+
+### 4. 機器人狀態與變換 (State & Transforms)
+
+- `/joint_states`: 所有關節的當前位置、速度與力矩資訊。
+- `/dynamic_joint_states`: 動態關節狀態。
+- `/tf` 與 `/tf_static`: 座標系變換資訊（動態即時變換與靜態結構變換）。
+- `/robot_description`: 機器人的模型描述（通常是 URDF 內容）。
+- `/joint_state_broadcaster/transition_event`: 關節狀態廣播器的事件監控。
+
+### 5. 導航與人機互動 (Navigation & Interaction)
+
+- `/move_base_simple/goal`: 發送給導航系統的目標點。
+- `/initialpose`: 設定機器人的初始估計位姿（常用於 AMCL 定位初始化）。
+- `/clicked_point`: 在 Rviz 中點擊的座標點。
+- `/joy` 與 `/joy/set_feedback`: 遊戲手把 (Joystick) 的輸入訊號與回饋設定。
+
+### 6. 系統監測與通訊 (System & Communication)
+
+- `/rosout`: 系統日誌訊息。
+- `/parameter_events`: 節點參數修改的事件通知。
+- `/diagnostics`: 硬體與軟體的診斷報告。
+- `/client_count` 與 `/connected_clients`: 目前系統連線的客戶端數量與明細。
+- `/out`: 包含各種壓縮格式的輸出數據流。

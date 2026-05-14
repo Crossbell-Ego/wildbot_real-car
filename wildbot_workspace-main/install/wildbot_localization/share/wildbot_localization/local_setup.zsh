@@ -1,0 +1,1 @@
+/workspaces/build/wildbot_localization/ament_cmake_environment_hooks/local_setup.zsh
