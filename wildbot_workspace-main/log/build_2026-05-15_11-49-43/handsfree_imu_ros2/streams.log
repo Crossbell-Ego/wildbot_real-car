@@ -1,0 +1,18 @@
+[0.731s] Invoking command in '/workspaces/build/handsfree_imu_ros2': PYTHONPATH=/workspaces/build/handsfree_imu_ros2/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /workspaces/build/handsfree_imu_ros2/build --no-deps symlink_data
+[0.897s] running develop
+[0.974s] running egg_info
+[0.981s] writing handsfree_imu_ros2.egg-info/PKG-INFO
+[0.981s] writing dependency_links to handsfree_imu_ros2.egg-info/dependency_links.txt
+[0.981s] writing entry points to handsfree_imu_ros2.egg-info/entry_points.txt
+[0.982s] writing requirements to handsfree_imu_ros2.egg-info/requires.txt
+[0.982s] writing top-level names to handsfree_imu_ros2.egg-info/top_level.txt
+[0.997s] reading manifest file 'handsfree_imu_ros2.egg-info/SOURCES.txt'
+[0.998s] writing manifest file 'handsfree_imu_ros2.egg-info/SOURCES.txt'
+[1.007s] running build_ext
+[1.007s] Creating /workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree-imu-ros2.egg-link (link to .)
+[1.008s] Installing imu_a9_data_node script to /workspaces/install/handsfree_imu_ros2/lib/handsfree_imu_ros2
+[1.008s] Installing imu_a9_node script to /workspaces/install/handsfree_imu_ros2/lib/handsfree_imu_ros2
+[1.008s] 
+[1.008s] Installed /workspaces/build/handsfree_imu_ros2
+[1.008s] running symlink_data
+[1.043s] Invoked command in '/workspaces/build/handsfree_imu_ros2' returned '0': PYTHONPATH=/workspaces/build/handsfree_imu_ros2/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /workspaces/build/handsfree_imu_ros2/build --no-deps symlink_data

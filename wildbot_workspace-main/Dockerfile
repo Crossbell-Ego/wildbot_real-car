@@ -1,13 +1,10 @@
 FROM ghcr.io/screamlab/wildbot_base_image:latest
+
 ENV ROS_DISTRO jazzy
-COPY . /tmp
+ENV SHELL /bin/bash
 
-WORKDIR /tmp
-
-### list the ros2 packages you want here
-#copy the workspaces and install ros packages and dependencies
-RUN cp -r ./workspaces/* /workspaces && \
-    apt-get update && \
+# A. 系統底層依賴 (最慢，但現在會被永久快取)
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         cmake pkg-config swig python3-pip git build-essential \
         ros-${ROS_DISTRO}-demo-nodes-py \
@@ -18,35 +15,22 @@ RUN cp -r ./workspaces/* /workspaces && \
         ros-${ROS_DISTRO}-nav2-map-server \
         ros-${ROS_DISTRO}-robot-localization \
         python3-opencv && \
-    # 安裝 YDLidar-SDK 並指定安裝到 /usr
-    git clone https://github.com/YDLIDAR/YDLidar-SDK.git /tmp/YDLidar-SDK && \
+    rm -rf /var/lib/apt/lists/*
+
+# B. AI 庫安裝 (獨立一層，解決 NumPy 衝突)
+RUN pip3 install --no-cache-dir --break-system-packages pip setuptools && \
+    pip3 install --no-cache-dir --break-system-packages "numpy<2" ultralytics torch torchvision
+
+# C. YDLidar-SDK 安裝
+RUN git clone https://github.com/YDLIDAR/YDLidar-SDK.git /tmp/YDLidar-SDK && \
     mkdir -p /tmp/YDLidar-SDK/build && \
     cd /tmp/YDLidar-SDK/build && \
     cmake -DCMAKE_INSTALL_PREFIX=/usr .. && \
     make -j$(nproc) && \
     make install && \
-    cd /workspaces && \
-    rosdep update --rosdistro ${ROS_DISTRO} && \
-    colcon mixin update && \
-    colcon metadata update
+    rm -rf /tmp/YDLidar-SDK
 
-# 設定環境變數幫助 CMake 找到 SDK
-ENV ydlidar_sdk_DIR=/usr/lib/cmake/ydlidar_sdk
-
-#build the workspace
+# D. 工作目錄設定 (注意：因為 docker-compose 會掛載這裡，我們只需設定環境)
 WORKDIR /workspaces
-RUN source /opt/ros/${ROS_DISTRO}/setup.bash && \
-    rosdep install -q -y -r --from-paths src --ignore-src && \
-    colcon build --symlink-install
-
-
-RUN rm -rf /tmp/* && \
-    rm -rf /temp/* && \
-    rm -rf /var/lib/apt/lists/*
-
-# 加入快捷鍵 'r' 用於快速編譯
-RUN echo "alias r='colcon build --symlink-install && source install/setup.bash'" >> /root/.bashrc
-
-
-ENTRYPOINT ["/ros_entrypoint.bash"]
-CMD ["bash", "-l"]
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc && \
+    echo "source /workspaces/install/setup.bash" >> ~/.bashrc

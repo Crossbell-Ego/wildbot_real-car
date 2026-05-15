@@ -163,7 +163,9 @@ class YoloNode(LifecycleNode):
 
         try:
             self.yolo = self.type_to_model[self.model_type](self.model)
-            self.yolo.to(self.device)
+            if "cuda" in self.device:
+                self.yolo.to(self.device)
+            self.get_logger().info(f"[{self.get_name()}] 模型載入完成，使用設備: {self.device}")
         except FileNotFoundError:
             self.get_logger().error(f"Model file '{self.model}' does not exists")
             return TransitionCallbackReturn.ERROR
@@ -187,7 +189,7 @@ class YoloNode(LifecycleNode):
             )
 
         self._sub = self.create_subscription(
-            CompressedImage, "/camera/image/compressed", self.image_cb, self.image_qos_profile
+            CompressedImage, "image_raw", self.image_cb, self.image_qos_profile
         )
 
         super().on_activate(state)
@@ -434,6 +436,7 @@ class YoloNode(LifecycleNode):
         """
 
         if self.enable:
+            self.get_logger().info("Received image, starting inference...", throttle_duration_sec=1.0)
 
             # Convert image + predict
             cv_image = self.cv_bridge.compressed_imgmsg_to_cv2(
@@ -441,7 +444,7 @@ class YoloNode(LifecycleNode):
             )
             results = self.yolo.predict(
                 source=cv_image,
-                verbose=False,
+                verbose=True,
                 stream=False,
                 conf=self.threshold,
                 iou=self.iou,
@@ -453,6 +456,7 @@ class YoloNode(LifecycleNode):
                 retina_masks=self.retina_masks,
                 device=self.device,
             )
+            self.get_logger().info(f"Inference finished. Found {len(results[0].boxes)} boxes.", throttle_duration_sec=1.0)
             results: Results = results[0].cpu()
 
             if results.boxes or results.obb:
@@ -521,8 +525,10 @@ class YoloNode(LifecycleNode):
 def main():
     rclpy.init()
     node = YoloNode()
-    node.trigger_configure()
-    node.trigger_activate()
+
+    # 移除自我激活，由外部腳本管理
+    # if node.trigger_configure() == TransitionCallbackReturn.SUCCESS:
+    #     node.trigger_activate()
 
     try:
         rclpy.spin(node)

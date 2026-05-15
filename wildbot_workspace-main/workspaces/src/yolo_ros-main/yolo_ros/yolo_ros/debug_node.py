@@ -86,7 +86,7 @@ class DebugNode(LifecycleNode):
         )
 
         # Pubs
-        self._dbg_pub = self.create_publisher(Image, "dbg_image", 10)
+        self._dbg_pub = self.create_publisher(CompressedImage, "dbg_image/compressed", self.image_qos_profile)
         self._bb_markers_pub = self.create_publisher(MarkerArray, "dgb_bb_markers", 10)
         self._kp_markers_pub = self.create_publisher(MarkerArray, "dgb_kp_markers", 10)
 
@@ -108,14 +108,14 @@ class DebugNode(LifecycleNode):
 
         # Subs
         self.image_sub = message_filters.Subscriber(
-            self, CompressedImage, "/camera/image/compressed", qos_profile=self.image_qos_profile
+            self, CompressedImage, "image_raw", qos_profile=self.image_qos_profile
         )
         self.detections_sub = message_filters.Subscriber(
             self, DetectionArray, "detections", qos_profile=10
         )
 
         self._synchronizer = message_filters.ApproximateTimeSynchronizer(
-            (self.image_sub, self.detections_sub), 10, 0.5
+            (self.image_sub, self.detections_sub), 10, 2.0
         )
         self._synchronizer.registerCallback(self.detections_cb)
 
@@ -433,6 +433,7 @@ class DebugNode(LifecycleNode):
         @param img_msg Image message
         @param detection_msg Detections message
         """
+        self.get_logger().info(f"收到影像與偵測結果，正在繪製除錯畫面... (檢測到 {len(detection_msg.detections)} 個物體)")
         cv_image = self.cv_bridge.compressed_imgmsg_to_cv2(img_msg, desired_encoding="bgr8")
         bb_marker_array = MarkerArray()
         kp_marker_array = MarkerArray()
@@ -469,10 +470,10 @@ class DebugNode(LifecycleNode):
                     marker.id = len(kp_marker_array.markers)
                     kp_marker_array.markers.append(marker)
 
-        # Publish dbg image
-        self._dbg_pub.publish(
-            self.cv_bridge.cv2_to_imgmsg(cv_image, encoding="bgr8", header=img_msg.header)
-        )
+        # Publish dbg image (Compressed)
+        msg = self.cv_bridge.cv2_to_compressed_imgmsg(cv_image, dst_format="jpeg")
+        msg.header = img_msg.header
+        self._dbg_pub.publish(msg)
         self._bb_markers_pub.publish(bb_marker_array)
         self._kp_markers_pub.publish(kp_marker_array)
 
@@ -480,8 +481,10 @@ class DebugNode(LifecycleNode):
 def main():
     rclpy.init()
     node = DebugNode()
-    node.trigger_configure()
-    node.trigger_activate()
+
+    # 移除自我激活，由外部腳本管理
+    # if node.trigger_configure() == TransitionCallbackReturn.SUCCESS:
+    #     node.trigger_activate()
 
     try:
         rclpy.spin(node)

@@ -52,9 +52,7 @@ def generate_launch_description():
 
         device = LaunchConfiguration("device")
         device_cmd = DeclareLaunchArgument(
-            "device",
-            default_value="cuda:0",
-            description="Device to use (GPU/CPU)",
+            "device", default_value="cpu", description="Device to use for inference"
         )
 
         fuse_model = LaunchConfiguration("fuse_model")
@@ -144,7 +142,7 @@ def generate_launch_description():
         input_image_topic = LaunchConfiguration("input_image_topic")
         input_image_topic_cmd = DeclareLaunchArgument(
             "input_image_topic",
-            default_value="/camera/rgb/image_raw",
+            default_value="/camera/color/image_raw/compressed",
             description="Name of the input image topic",
         )
 

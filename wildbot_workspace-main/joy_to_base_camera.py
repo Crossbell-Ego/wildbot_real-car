@@ -114,7 +114,7 @@ class JoyBaseCameraGripper(Node):
         self.timer = self.create_timer(0.05, self.publish_cmd_vel)
 
         self.get_logger().info('Checking arm_controller action server...')
-        if not self.arm_client.wait_for_server(timeout_sec=2.0):
+        if not self.arm_client.wait_for_server(timeout_sec=20.0):
             self.get_logger().error('Arm controller action server NOT found! Arm/Gripper functions will be disabled.')
         else:
             self.get_logger().info('Arm controller action server connected.')

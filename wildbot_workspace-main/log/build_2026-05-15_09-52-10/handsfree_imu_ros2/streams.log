@@ -1,0 +1,43 @@
+[0.742s] Invoking command in '/workspaces/build/handsfree_imu_ros2': PYTHONPATH=/workspaces/build/handsfree_imu_ros2/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --uninstall --editable --build-directory /workspaces/build/handsfree_imu_ros2/build
+[0.908s] running develop
+[0.989s] Removing /workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree-imu-ros2.egg-link (link to .)
+[1.025s] Invoked command in '/workspaces/build/handsfree_imu_ros2' returned '0': PYTHONPATH=/workspaces/build/handsfree_imu_ros2/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --uninstall --editable --build-directory /workspaces/build/handsfree_imu_ros2/build
+[1.026s] Invoking command in '/workspaces/workspaces/imu_ws/src/handsfree_imu_ros2': PYTHONPATH=/workspaces/build/handsfree_imu_ros2/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../build/handsfree_imu_ros2 build --build-base /workspaces/build/handsfree_imu_ros2/build install --record /workspaces/build/handsfree_imu_ros2/install.log --single-version-externally-managed install_data --force
+[1.190s] running egg_info
+[1.200s] writing ../../../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/PKG-INFO
+[1.200s] writing dependency_links to ../../../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/dependency_links.txt
+[1.200s] writing entry points to ../../../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/entry_points.txt
+[1.201s] writing requirements to ../../../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/requires.txt
+[1.201s] writing top-level names to ../../../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/top_level.txt
+[1.221s] reading manifest file '../../../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/SOURCES.txt'
+[1.222s] writing manifest file '../../../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info/SOURCES.txt'
+[1.222s] running build
+[1.222s] running build_py
+[1.222s] creating /workspaces/build/handsfree_imu_ros2/build
+[1.222s] creating /workspaces/build/handsfree_imu_ros2/build/lib
+[1.222s] creating /workspaces/build/handsfree_imu_ros2/build/lib/handsfree_imu_ros2
+[1.222s] copying handsfree_imu_ros2/imu_data_node.py -> /workspaces/build/handsfree_imu_ros2/build/lib/handsfree_imu_ros2
+[1.222s] copying handsfree_imu_ros2/imu_a9_node.py -> /workspaces/build/handsfree_imu_ros2/build/lib/handsfree_imu_ros2
+[1.222s] copying handsfree_imu_ros2/__init__.py -> /workspaces/build/handsfree_imu_ros2/build/lib/handsfree_imu_ros2
+[1.222s] copying handsfree_imu_ros2/python_driver_a9.py -> /workspaces/build/handsfree_imu_ros2/build/lib/handsfree_imu_ros2
+[1.223s] running install
+[1.227s] running install_lib
+[1.237s] creating /workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree_imu_ros2
+[1.237s] copying /workspaces/build/handsfree_imu_ros2/build/lib/handsfree_imu_ros2/imu_data_node.py -> /workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree_imu_ros2
+[1.237s] copying /workspaces/build/handsfree_imu_ros2/build/lib/handsfree_imu_ros2/imu_a9_node.py -> /workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree_imu_ros2
+[1.237s] copying /workspaces/build/handsfree_imu_ros2/build/lib/handsfree_imu_ros2/__init__.py -> /workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree_imu_ros2
+[1.237s] copying /workspaces/build/handsfree_imu_ros2/build/lib/handsfree_imu_ros2/python_driver_a9.py -> /workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree_imu_ros2
+[1.238s] byte-compiling /workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree_imu_ros2/imu_data_node.py to imu_data_node.cpython-312.pyc
+[1.240s] byte-compiling /workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree_imu_ros2/imu_a9_node.py to imu_a9_node.cpython-312.pyc
+[1.240s] byte-compiling /workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree_imu_ros2/__init__.py to __init__.cpython-312.pyc
+[1.240s] byte-compiling /workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree_imu_ros2/python_driver_a9.py to python_driver_a9.cpython-312.pyc
+[1.243s] running install_data
+[1.243s] copying resource/handsfree_imu_ros2 -> /workspaces/install/handsfree_imu_ros2/share/ament_index/resource_index/packages
+[1.243s] copying package.xml -> /workspaces/install/handsfree_imu_ros2/share/handsfree_imu_ros2
+[1.243s] running install_egg_info
+[1.260s] Copying ../../../../build/handsfree_imu_ros2/handsfree_imu_ros2.egg-info to /workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages/handsfree_imu_ros2-0.0.0-py3.12.egg-info
+[1.261s] running install_scripts
+[1.321s] Installing imu_a9_data_node script to /workspaces/install/handsfree_imu_ros2/lib/handsfree_imu_ros2
+[1.322s] Installing imu_a9_node script to /workspaces/install/handsfree_imu_ros2/lib/handsfree_imu_ros2
+[1.322s] writing list of installed files to '/workspaces/build/handsfree_imu_ros2/install.log'
+[1.345s] Invoked command in '/workspaces/workspaces/imu_ws/src/handsfree_imu_ros2' returned '0': PYTHONPATH=/workspaces/build/handsfree_imu_ros2/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/install/handsfree_imu_ros2/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../build/handsfree_imu_ros2 build --build-base /workspaces/build/handsfree_imu_ros2/build install --record /workspaces/build/handsfree_imu_ros2/install.log --single-version-externally-managed install_data --force

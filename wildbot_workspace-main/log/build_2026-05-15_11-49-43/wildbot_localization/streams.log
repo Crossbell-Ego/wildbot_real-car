@@ -1,0 +1,23 @@
+[0.370s] Invoking command in '/workspaces/build/wildbot_localization': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspaces/install/yolo_ros:/workspaces/install/wildbot_control:/workspaces/install/handsfree_imu_ros2:/workspaces/install/arm_ik:/robot_ws/install/lidar_pkg:/opt/ros/jazzy /usr/bin/cmake --build /workspaces/build/wildbot_localization -- -j16 -l16
+[0.412s] Invoked command in '/workspaces/build/wildbot_localization' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspaces/install/yolo_ros:/workspaces/install/wildbot_control:/workspaces/install/handsfree_imu_ros2:/workspaces/install/arm_ik:/robot_ws/install/lidar_pkg:/opt/ros/jazzy /usr/bin/cmake --build /workspaces/build/wildbot_localization -- -j16 -l16
+[0.413s] Invoking command in '/workspaces/build/wildbot_localization': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspaces/install/yolo_ros:/workspaces/install/wildbot_control:/workspaces/install/handsfree_imu_ros2:/workspaces/install/arm_ik:/robot_ws/install/lidar_pkg:/opt/ros/jazzy /usr/bin/cmake --install /workspaces/build/wildbot_localization
+[0.414s] -- Install configuration: ""
+[0.415s] -- Execute custom install script
+[0.415s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/wildbot_localization/config/ekf.yaml
+[0.415s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/wildbot_localization/launch/ekf_launch.py
+[0.415s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/ament_index/resource_index/package_run_dependencies/wildbot_localization
+[0.415s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/ament_index/resource_index/parent_prefix_path/wildbot_localization
+[0.416s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/wildbot_localization/environment/ament_prefix_path.sh
+[0.416s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/wildbot_localization/environment/ament_prefix_path.dsv
+[0.416s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/wildbot_localization/environment/path.sh
+[0.416s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/wildbot_localization/environment/path.dsv
+[0.416s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/wildbot_localization/local_setup.bash
+[0.416s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/wildbot_localization/local_setup.sh
+[0.417s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/wildbot_localization/local_setup.zsh
+[0.417s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/wildbot_localization/local_setup.dsv
+[0.417s] -- Symlinking: /workspaces/install/wildbot_localization/share/wildbot_localization/package.dsv
+[0.424s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/ament_index/resource_index/packages/wildbot_localization
+[0.425s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/wildbot_localization/cmake/wildbot_localizationConfig.cmake
+[0.425s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/wildbot_localization/cmake/wildbot_localizationConfig-version.cmake
+[0.425s] -- Up-to-date symlink: /workspaces/install/wildbot_localization/share/wildbot_localization/package.xml
+[0.426s] Invoked command in '/workspaces/build/wildbot_localization' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspaces/install/yolo_ros:/workspaces/install/wildbot_control:/workspaces/install/handsfree_imu_ros2:/workspaces/install/arm_ik:/robot_ws/install/lidar_pkg:/opt/ros/jazzy /usr/bin/cmake --install /workspaces/build/wildbot_localization

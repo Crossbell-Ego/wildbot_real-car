@@ -1,0 +1,35 @@
+[0.467s] Invoking command in '/workspaces/workspaces/src/arm_ik': PYTHONPATH=/workspaces/build/arm_ik/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/install/arm_ik/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/arm_ik build --build-base /workspaces/build/arm_ik/build install --record /workspaces/build/arm_ik/install.log --single-version-externally-managed install_data
+[0.599s] running egg_info
+[0.605s] creating ../../../build/arm_ik/arm_ik.egg-info
+[0.605s] writing ../../../build/arm_ik/arm_ik.egg-info/PKG-INFO
+[0.605s] writing dependency_links to ../../../build/arm_ik/arm_ik.egg-info/dependency_links.txt
+[0.605s] writing entry points to ../../../build/arm_ik/arm_ik.egg-info/entry_points.txt
+[0.605s] writing top-level names to ../../../build/arm_ik/arm_ik.egg-info/top_level.txt
+[0.605s] writing manifest file '../../../build/arm_ik/arm_ik.egg-info/SOURCES.txt'
+[0.619s] reading manifest file '../../../build/arm_ik/arm_ik.egg-info/SOURCES.txt'
+[0.619s] writing manifest file '../../../build/arm_ik/arm_ik.egg-info/SOURCES.txt'
+[0.619s] running build
+[0.619s] running build_py
+[0.619s] creating /workspaces/build/arm_ik/build/lib/arm_ik
+[0.619s] copying arm_ik/__init__.py -> /workspaces/build/arm_ik/build/lib/arm_ik
+[0.619s] copying arm_ik/ik_solver.py -> /workspaces/build/arm_ik/build/lib/arm_ik
+[0.619s] copying arm_ik/ik_node.py -> /workspaces/build/arm_ik/build/lib/arm_ik
+[0.619s] running install
+[0.622s] running install_lib
+[0.628s] creating /workspaces/install/arm_ik/lib/python3.12/site-packages/arm_ik
+[0.628s] copying /workspaces/build/arm_ik/build/lib/arm_ik/__init__.py -> /workspaces/install/arm_ik/lib/python3.12/site-packages/arm_ik
+[0.628s] copying /workspaces/build/arm_ik/build/lib/arm_ik/ik_solver.py -> /workspaces/install/arm_ik/lib/python3.12/site-packages/arm_ik
+[0.628s] copying /workspaces/build/arm_ik/build/lib/arm_ik/ik_node.py -> /workspaces/install/arm_ik/lib/python3.12/site-packages/arm_ik
+[0.628s] byte-compiling /workspaces/install/arm_ik/lib/python3.12/site-packages/arm_ik/__init__.py to __init__.cpython-312.pyc
+[0.628s] byte-compiling /workspaces/install/arm_ik/lib/python3.12/site-packages/arm_ik/ik_solver.py to ik_solver.cpython-312.pyc
+[0.631s] byte-compiling /workspaces/install/arm_ik/lib/python3.12/site-packages/arm_ik/ik_node.py to ik_node.cpython-312.pyc
+[0.632s] running install_data
+[0.632s] creating /workspaces/install/arm_ik/share/ament_index/resource_index/packages
+[0.632s] copying resource/arm_ik -> /workspaces/install/arm_ik/share/ament_index/resource_index/packages
+[0.632s] copying package.xml -> /workspaces/install/arm_ik/share/arm_ik
+[0.633s] running install_egg_info
+[0.639s] Copying ../../../build/arm_ik/arm_ik.egg-info to /workspaces/install/arm_ik/lib/python3.12/site-packages/arm_ik-0.0.0-py3.12.egg-info
+[0.639s] running install_scripts
+[0.652s] Installing ik_node script to /workspaces/install/arm_ik/bin
+[0.652s] writing list of installed files to '/workspaces/build/arm_ik/install.log'
+[0.666s] Invoked command in '/workspaces/workspaces/src/arm_ik' returned '0': PYTHONPATH=/workspaces/build/arm_ik/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/install/arm_ik/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/arm_ik build --build-base /workspaces/build/arm_ik/build install --record /workspaces/build/arm_ik/install.log --single-version-externally-managed install_data

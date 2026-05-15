@@ -35,17 +35,21 @@ def generate_launch_description():
                     )
                 ),
                 launch_arguments={
-                    "model": LaunchConfiguration("model", default="yolo26m.pt"),
+                    "model": LaunchConfiguration(
+                        "model",
+                        default="/workspaces/workspaces/src/yolo_ros-main/model/bearknob_openvino_model",
+                    ),
                     "tracker": LaunchConfiguration("tracker", default="bytetrack.yaml"),
-                    "device": LaunchConfiguration("device", default="cuda:0"),
+                    "device": LaunchConfiguration("device", default="cpu"),
                     "enable": LaunchConfiguration("enable", default="True"),
-                    "threshold": LaunchConfiguration("threshold", default="0.5"),
+                    "threshold": LaunchConfiguration("threshold", default="0.1"),
                     "input_image_topic": LaunchConfiguration(
-                        "input_image_topic", default="/camera/rgb/image_raw"
+                        "input_image_topic", default="/camera/color/image_raw/compressed"
                     ),
                     "image_reliability": LaunchConfiguration(
-                        "image_reliability", default="1"
+                        "image_reliability", default="2"
                     ),
+                    "use_3d": LaunchConfiguration("use_3d", default="False"),
                     "namespace": LaunchConfiguration("namespace", default="yolo"),
                 }.items(),
             )

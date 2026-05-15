@@ -1,0 +1,16 @@
+[0.706s] Invoking command in '/workspaces/build/arm_ik': PYTHONPATH=/workspaces/build/arm_ik/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/install/arm_ik/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /workspaces/build/arm_ik/build --no-deps symlink_data
+[0.855s] running develop
+[0.919s] running egg_info
+[0.926s] writing arm_ik.egg-info/PKG-INFO
+[0.926s] writing dependency_links to arm_ik.egg-info/dependency_links.txt
+[0.926s] writing entry points to arm_ik.egg-info/entry_points.txt
+[0.926s] writing top-level names to arm_ik.egg-info/top_level.txt
+[0.940s] reading manifest file 'arm_ik.egg-info/SOURCES.txt'
+[0.940s] writing manifest file 'arm_ik.egg-info/SOURCES.txt'
+[0.949s] running build_ext
+[0.949s] Creating /workspaces/install/arm_ik/lib/python3.12/site-packages/arm-ik.egg-link (link to .)
+[0.950s] Installing ik_node script to /workspaces/install/arm_ik/bin
+[0.950s] 
+[0.950s] Installed /workspaces/build/arm_ik
+[0.950s] running symlink_data
+[0.987s] Invoked command in '/workspaces/build/arm_ik' returned '0': PYTHONPATH=/workspaces/build/arm_ik/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/install/arm_ik/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /workspaces/build/arm_ik/build --no-deps symlink_data

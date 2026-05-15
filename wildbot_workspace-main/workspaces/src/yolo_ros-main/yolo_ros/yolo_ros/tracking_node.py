@@ -78,8 +78,12 @@ class TrackingNode(LifecycleNode):
             self.get_parameter("image_reliability").get_parameter_value().integer_value
         )
 
-        self.tracker = self.create_tracker(tracker_name)
-        self._pub = self.create_publisher(DetectionArray, "tracking", 10)
+        try:
+            self.tracker = self.create_tracker(tracker_name)
+            self._pub = self.create_publisher(DetectionArray, "tracking", 10)
+        except Exception as e:
+            self.get_logger().error(f"[{self.get_name()}] 配置追蹤器失敗: {str(e)}")
+            return TransitionCallbackReturn.FAILURE
 
         super().on_configure(state)
         self.get_logger().info(f"[{self.get_name()}] Configured")
@@ -106,14 +110,14 @@ class TrackingNode(LifecycleNode):
 
         # Subs
         self.image_sub = message_filters.Subscriber(
-            self, CompressedImage, "/camera/image/compressed", qos_profile=image_qos_profile
+            self, CompressedImage, "image_raw", qos_profile=image_qos_profile
         )
         self.detections_sub = message_filters.Subscriber(
             self, DetectionArray, "detections", qos_profile=10
         )
 
         self._synchronizer = message_filters.ApproximateTimeSynchronizer(
-            (self.image_sub, self.detections_sub), 10, 0.5
+            (self.image_sub, self.detections_sub), 10, 2.0
         )
         self._synchronizer.registerCallback(self.detections_cb)
 
@@ -208,6 +212,7 @@ class TrackingNode(LifecycleNode):
         @param img_msg Image message
         @param detections_msg Detections message
         """
+        self.get_logger().info(f"追蹤節點收到資料：影像與偵測結果已同步，正在進行追蹤...", throttle_duration_sec=2.0)
 
         tracked_detections_msg = DetectionArray()
         tracked_detections_msg.header = img_msg.header
@@ -269,8 +274,10 @@ class TrackingNode(LifecycleNode):
 def main():
     rclpy.init()
     node = TrackingNode()
-    node.trigger_configure()
-    node.trigger_activate()
+    
+    # 移除自我激活，交由 yolo.sh 或 Launch 系統處理
+    # if node.trigger_configure() == TransitionCallbackReturn.SUCCESS:
+    #     node.trigger_activate()
 
     try:
         rclpy.spin(node)
