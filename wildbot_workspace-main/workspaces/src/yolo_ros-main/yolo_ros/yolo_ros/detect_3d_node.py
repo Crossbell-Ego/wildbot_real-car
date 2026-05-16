@@ -311,6 +311,12 @@ class Detect3DNode(LifecycleNode):
 
                 # 直接使用 TF 樹進行轉換 (放棄手動推算，因為 TF 樹其實是對的)
                 bbox3d = Detect3DNode.transform_3d_box(bbox3d, transform[0], transform[1])
+                
+                # --- 硬體高度補償修正 ---
+                # 目前 URDF 轉換有誤差，導致 Z 偏高約 32cm，在此強行扣除
+                bbox3d.center.position.z -= 0.20
+                # -----------------------
+                
                 bbox3d.frame_id = self.target_frame
                 new_detections[-1].bbox3d = bbox3d
 
@@ -619,8 +625,8 @@ class Detect3DNode(LifecycleNode):
         valid_depths = raw_depths / actual_divisor
 
         # 🚨 DEBUG: 印出原始深度值與除數，確認為何 Z 會變成幾乎是 0
-        if len(raw_depths) > 0:
-            self.get_logger().info(f"[Debug] ROI Raw Depths - Min: {np.min(raw_depths):.3f}, Max: {np.max(raw_depths):.3f}, Divisor: {actual_divisor}")
+        # if len(raw_depths) > 0:
+        #     self.get_logger().info(f"[Debug] ROI Raw Depths - Min: {np.min(raw_depths):.3f}, Max: {np.max(raw_depths):.3f}, Divisor: {actual_divisor}")
 
         # Ensure correct numeric type, filter out depths < 0.42m to ignore car chassis
         # 🚨 過濾掉小於 42 公分的深度，避免把相機前面車體的零件當成目標！
@@ -629,7 +635,8 @@ class Detect3DNode(LifecycleNode):
             # 如果還是拿到了 RGB，代表深度圖有問題，我們強制取第一通道
             valid_depths = valid_depths[:, 0]
             
-        valid_mask = (valid_depths > 0.42) & np.isfinite(valid_depths)
+        # 🚨 調低門檻：過濾掉小於 20 公分的深度 (原為 0.42)
+        valid_mask = (valid_depths > 0.20) & np.isfinite(valid_depths)
         valid_depths = valid_depths[valid_mask]
         valid_coords = pixel_coords[valid_mask]
 
@@ -674,7 +681,12 @@ class Detect3DNode(LifecycleNode):
         w = float(x_max - x_min)
         h = float(y_max - y_min)
 
-        # Create 3D BB
+        # 建立 3D BB 並在終端機印出資訊 (包含信心度)
+        self.get_logger().info(
+            f"\033[92m[YOLO-3D] 偵測到 '{detection.class_name}' (信心度: {detection.score:.2f}): "
+            f"X={x:.2f}m, Y={y:.2f}m, Z={z:.2f}m\033[0m"
+        )
+
         msg = BoundingBox3D()
         msg.center.position.x = x
         msg.center.position.y = y

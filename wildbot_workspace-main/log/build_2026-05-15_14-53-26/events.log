@@ -1,0 +1,40 @@
+[0.000000] (-) TimerEvent: {}
+[0.000065] (-) JobUnselected: {'identifier': 'arm_ik'}
+[0.000094] (-) JobUnselected: {'identifier': 'handsfree_imu_ros2'}
+[0.000109] (-) JobUnselected: {'identifier': 'kros_car_description'}
+[0.000120] (-) JobUnselected: {'identifier': 'wildbot_control'}
+[0.000130] (-) JobUnselected: {'identifier': 'wildbot_localization'}
+[0.000139] (-) JobUnselected: {'identifier': 'wildbot_slam'}
+[0.000148] (-) JobUnselected: {'identifier': 'ydlidar_ros2_driver'}
+[0.000156] (-) JobUnselected: {'identifier': 'yolo_bringup'}
+[0.000164] (-) JobUnselected: {'identifier': 'yolo_msgs'}
+[0.000174] (yolo_ros) JobQueued: {'identifier': 'yolo_ros', 'dependencies': OrderedDict({'yolo_msgs': '/workspaces/install/yolo_msgs'})}
+[0.000193] (yolo_ros) JobStarted: {'identifier': 'yolo_ros'}
+[0.099517] (-) TimerEvent: {}
+[0.199671] (-) TimerEvent: {}
+[0.299837] (-) TimerEvent: {}
+[0.386660] (yolo_ros) Command: {'cmd': ['/usr/bin/python3', '-W', 'ignore:setup.py install is deprecated', '-W', 'ignore:easy_install command is deprecated', 'setup.py', 'develop', '--editable', '--build-directory', '/workspaces/build/yolo_ros/build', '--no-deps', 'symlink_data'], 'cwd': '/workspaces/build/yolo_ros', 'env': {'GZ_CONFIG_PATH': '/opt/ros/jazzy/opt/sdformat_vendor/share/gz', 'HOSTNAME': 'cffa12358212', 'SHLVL': '0', 'LD_LIBRARY_PATH': '/workspaces/install/yolo_msgs/lib:/opt/ros/jazzy/opt/sdformat_vendor/lib:/opt/ros/jazzy/opt/rviz_ogre_vendor/lib:/opt/ros/jazzy/lib/x86_64-linux-gnu:/opt/ros/jazzy/opt/gz_math_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_tools_vendor/lib:/opt/ros/jazzy/opt/gz_cmake_vendor/lib:/opt/ros/jazzy/lib', 'HOME': '/root', 'ROS_PYTHON_VERSION': '3', 'ROS_DISTRO': 'jazzy', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'DRIVER_WS': '/robot_ws', 'PATH': '/opt/ros/jazzy/opt/gz_tools_vendor/bin:/opt/ros/jazzy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin', 'LANG': 'C.UTF-8', 'ROS_DOMAIN_ID': '0', 'AMENT_PREFIX_PATH': '/workspaces/install/yolo_msgs:/opt/ros/jazzy', 'SHELL': '/bin/bash', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'SUBNET', 'PWD': '/workspaces/build/yolo_ros', 'LC_ALL': 'C.UTF-8', 'PYTHONPATH': '/workspaces/build/yolo_ros/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/install/yolo_ros/lib/python3.12/site-packages:/workspaces/install/yolo_msgs/lib/python3.12/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages', 'COLCON': '1', 'CMAKE_PREFIX_PATH': '/workspaces/install/yolo_msgs:/opt/ros/jazzy/opt/sdformat_vendor:/opt/ros/jazzy/opt/gz_math_vendor:/opt/ros/jazzy/opt/gz_utils_vendor:/opt/ros/jazzy/opt/gz_tools_vendor:/opt/ros/jazzy/opt/gz_cmake_vendor', 'ROS2_WS': '/workspaces'}, 'shell': False}
+[0.399860] (-) TimerEvent: {}
+[0.499972] (-) TimerEvent: {}
+[0.531311] (yolo_ros) StdoutLine: {'line': b'running develop\n'}
+[0.598612] (yolo_ros) StdoutLine: {'line': b'running egg_info\n'}
+[0.600027] (-) TimerEvent: {}
+[0.604743] (yolo_ros) StdoutLine: {'line': b'writing yolo_ros.egg-info/PKG-INFO\n'}
+[0.605008] (yolo_ros) StdoutLine: {'line': b'writing dependency_links to yolo_ros.egg-info/dependency_links.txt\n'}
+[0.605118] (yolo_ros) StdoutLine: {'line': b'writing entry points to yolo_ros.egg-info/entry_points.txt\n'}
+[0.605223] (yolo_ros) StdoutLine: {'line': b'writing requirements to yolo_ros.egg-info/requires.txt\n'}
+[0.605290] (yolo_ros) StdoutLine: {'line': b'writing top-level names to yolo_ros.egg-info/top_level.txt\n'}
+[0.618900] (yolo_ros) StdoutLine: {'line': b"reading manifest file 'yolo_ros.egg-info/SOURCES.txt'\n"}
+[0.619237] (yolo_ros) StdoutLine: {'line': b"writing manifest file 'yolo_ros.egg-info/SOURCES.txt'\n"}
+[0.626371] (yolo_ros) StdoutLine: {'line': b'running build_ext\n'}
+[0.626534] (yolo_ros) StdoutLine: {'line': b'Creating /workspaces/install/yolo_ros/lib/python3.12/site-packages/yolo-ros.egg-link (link to .)\n'}
+[0.626815] (yolo_ros) StdoutLine: {'line': b'Installing debug_node script to /workspaces/install/yolo_ros/lib/yolo_ros\n'}
+[0.626941] (yolo_ros) StdoutLine: {'line': b'Installing detect_3d_node script to /workspaces/install/yolo_ros/lib/yolo_ros\n'}
+[0.627018] (yolo_ros) StdoutLine: {'line': b'Installing tracking_node script to /workspaces/install/yolo_ros/lib/yolo_ros\n'}
+[0.627077] (yolo_ros) StdoutLine: {'line': b'Installing yolo_node script to /workspaces/install/yolo_ros/lib/yolo_ros\n'}
+[0.627136] (yolo_ros) StdoutLine: {'line': b'\n'}
+[0.627180] (yolo_ros) StdoutLine: {'line': b'Installed /workspaces/build/yolo_ros\n'}
+[0.627233] (yolo_ros) StdoutLine: {'line': b'running symlink_data\n'}
+[0.656514] (yolo_ros) CommandEnded: {'returncode': 0}
+[0.661808] (yolo_ros) JobEnded: {'identifier': 'yolo_ros', 'rc': 0}
+[0.662125] (-) EventReactorShutdown: {}

@@ -1,0 +1,1 @@
+[0.349s] Invoking command in '/workspaces/build/wildbot_localization': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspaces/install/yolo_ros:/workspaces/install/wildbot_control:/workspaces/install/handsfree_imu_ros2:/workspaces/install/arm_ik:/robot_ws/install/lidar_pkg:/opt/ros/jazzy /usr/bin/cmake --build /workspaces/build/wildbot_localization -- -j16 -l16

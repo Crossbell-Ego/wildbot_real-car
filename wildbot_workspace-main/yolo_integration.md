@@ -22,11 +22,22 @@ sudo ./scripts/00_start_all.sh
 ```
 
 ### 步驟 2: 手動開啟 YOLO
-進入小車主容器後，執行快捷腳本：
+進入小車主容器後，根據任務需求選擇執行模式：
+
+#### 模式 A：2D 追蹤模式 (節省資源)
+適用於一般的物體辨識與追蹤，不涉及空間座標。
 ```bash
 docker exec -it compose-kros_car-1 bash
-# 進入容器後輸入
+# 進入容器後執行
 ./yolo.sh
+```
+
+#### 模式 B：3D 定位模式 (空間抓取)
+適用於機械手臂抓取任務，會將物體投影至 `base_link` 座標系。
+```bash
+docker exec -it compose-kros_car-1 bash
+# 進入容器後執行
+./yolo_3d.sh
 ```
 
 ## 4. 關鍵配置與優化 (Optimization)
@@ -37,8 +48,10 @@ docker exec -it compose-kros_car-1 bash
 ### B. 壓縮影像話題對接
 為了節省頻寬，YOLO 節點直接訂閱 `/camera/color/image_raw/compressed`。這已在 `yolo_node.py` 中透過相對話題路徑完成修正。
 
-### C. 3D 投影功能 (目前已關閉)
-啟動時加入了 `use_3d:=False`，系統目前不會訂閱深度圖，若需恢復 3D 定位功能請將 `yolo.sh` 中的參數改回 `True` 並取消節點激活的註解。
+### C. 3D 投影功能
+系統目前支援動態切換：
+- **預設模式 (`yolo.sh`)**: `use_3d:=False`，降低 CPU 負擔。
+- **3D 模式 (`yolo_3d.sh`)**: `use_3d:=True`，自動訂閱深度圖並激活 `detect_3d_node`。
 
 ## 5. 觀察與驗證 (Verification)
 

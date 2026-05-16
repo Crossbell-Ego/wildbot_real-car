@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <robot name="kros_car" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-<xacro:include filename="materials.xacro" />
+<!-- <xacro:include filename="materials.xacro" /> -->
 <xacro:arg name="wheel_port" default="/dev/usb_wheel" />
 <xacro:arg name="wheel_baudrate" default="115200" />
 <xacro:arg name="wheel_motor_ids" default="1,2,3,4" />
@@ -535,21 +535,6 @@
 </joint>
 
 <joint name="Rigid 2" type="fixed">
-  <origin xyz="0.135 -0.127581 -0.000674" rpy="0 0 0"/>
-  <parent link="upper_blue_v1_1"/>
-  <child link="upper_silver_v1_1"/>
-</joint>
-
-<joint name="Rigid 3" type="fixed">
-  <origin xyz="-0.150487 0.0 0.074934" rpy="0 0 0"/>
-  <parent link="base_link"/>
-  <child link="Side_U_Bracket_Component1_v2_1"/>
-</joint>
-
-<joint name="Rigid 16" type="fixed">
-  <origin xyz="-0.007313 0.02025 -0.017533" rpy="0 0 0"/>
-  <parent link="Side_U_Bracket_Component1_v2_1"/>
-  <child link="new_motor_v2_1"/>
 </joint>
 
 <joint name="Rigid 27" type="fixed">
@@ -763,6 +748,6 @@
   <joint name="camera_joint" type="fixed">
     <parent link="base_link"/>
     <child link="camera_link"/>
-    <origin xyz="0.15 0 0.3587" rpy="0 0 0"/>
+    <origin xyz="0.135 0 0.265" rpy="0 -0.523 0"/>
   </joint>
 </robot>

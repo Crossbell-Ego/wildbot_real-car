@@ -19,7 +19,7 @@ RUN apt-get update && \
 
 # B. AI 庫安裝 (獨立一層，解決 NumPy 衝突)
 RUN pip3 install --no-cache-dir --break-system-packages pip setuptools && \
-    pip3 install --no-cache-dir --break-system-packages "numpy<2" ultralytics torch torchvision
+    pip3 install --no-cache-dir --break-system-packages "numpy<2" ultralytics torch torchvision pybullet lap filterpy
 
 # C. YDLidar-SDK 安裝
 RUN git clone https://github.com/YDLIDAR/YDLidar-SDK.git /tmp/YDLidar-SDK && \

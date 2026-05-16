@@ -1,0 +1,17 @@
+[1.162s] Invoking command in '/workspaces/build/wildbot_control': PYTHONPATH=/workspaces/build/wildbot_control/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/install/wildbot_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /workspaces/build/wildbot_control/build --no-deps symlink_data
+[1.454s] running develop
+[1.556s] running egg_info
+[1.567s] writing wildbot_control.egg-info/PKG-INFO
+[1.567s] writing dependency_links to wildbot_control.egg-info/dependency_links.txt
+[1.568s] writing entry points to wildbot_control.egg-info/entry_points.txt
+[1.568s] writing requirements to wildbot_control.egg-info/requires.txt
+[1.568s] writing top-level names to wildbot_control.egg-info/top_level.txt
+[1.584s] reading manifest file 'wildbot_control.egg-info/SOURCES.txt'
+[1.585s] writing manifest file 'wildbot_control.egg-info/SOURCES.txt'
+[1.597s] running build_ext
+[1.598s] Creating /workspaces/install/wildbot_control/lib/python3.12/site-packages/wildbot-control.egg-link (link to .)
+[1.600s] Installing yaw_hold_node script to /workspaces/install/wildbot_control/lib/wildbot_control
+[1.600s] 
+[1.601s] Installed /workspaces/build/wildbot_control
+[1.601s] running symlink_data
+[1.660s] Invoked command in '/workspaces/build/wildbot_control' returned '0': PYTHONPATH=/workspaces/build/wildbot_control/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspaces/install/wildbot_control/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /workspaces/build/wildbot_control/build --no-deps symlink_data

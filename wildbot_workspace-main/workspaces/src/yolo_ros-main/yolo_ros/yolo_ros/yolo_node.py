@@ -436,7 +436,7 @@ class YoloNode(LifecycleNode):
         """
 
         if self.enable:
-            self.get_logger().info("Received image, starting inference...", throttle_duration_sec=1.0)
+            # self.get_logger().info("Received image, starting inference...", throttle_duration_sec=1.0)
 
             # Convert image + predict
             cv_image = self.cv_bridge.compressed_imgmsg_to_cv2(
@@ -456,7 +456,12 @@ class YoloNode(LifecycleNode):
                 retina_masks=self.retina_masks,
                 device=self.device,
             )
-            self.get_logger().info(f"Inference finished. Found {len(results[0].boxes)} boxes.", throttle_duration_sec=1.0)
+            # 顯示偵測到的類別與信心度 (前 5 個)
+            names = [f"{self.yolo.names[int(b.cls[0])]} ({float(b.conf[0]):.2f})" for b in results[0].boxes]
+            log_msg = f"偵測到 {len(results[0].boxes)} 個物體: {', '.join(names[:5])}"
+            if len(names) > 5: log_msg += "..."
+            self.get_logger().info(log_msg, throttle_duration_sec=1.0)
+            
             results: Results = results[0].cpu()
 
             if results.boxes or results.obb:

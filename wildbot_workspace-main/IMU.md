@@ -22,7 +22,27 @@ IMU 使用 Handsfree A9 模組，透過 USB 連接，已在宿主機綁定固定
 ## 4. 自動化啟動設定 (Docker Compose)
 IMU 驅動已整合進 `docker-compose_kros_car.yml`，會隨系統啟動自動執行。
 
-**服務名稱**: `imu_driver`
+## 5. 數據驗證與解讀 (Data Verification)
+經 2026-05-15 實測，`/imu/data` 輸出狀態如下：
+
+*   **更新頻率**: 穩定在 **100 Hz**。
+*   **座標系 (Frame ID)**: `imu_link`。
+
+### 數值含義說明：
+| 數據項 | 實測值範例 | 物理含義與驗證 |
+| :--- | :--- | :--- |
+| **Orientation** | `z: 0.22, w: 0.97` | 四元數格式，代表水平朝向。靜止時數值應保持穩定。 |
+| **Angular Velocity** | `x/y/z ≈ 0.00` | 小車靜止時，三個軸的角度變化率應趨近於零。 |
+| **Linear Acceleration** | `z ≈ -9.79` | **重力加速度驗證**。Z 軸數值接近 -9.8 代表感測器平放且運作正常。 |
+
+### 快速檢查指令：
+```bash
+# 檢查頻率
+ros2 topic hz /imu/data
+
+# 檢查單幀數據
+ros2 topic echo /imu/data --once
+```
 **自動執行指令**:
 ```bash
 source /workspaces/workspaces/imu_ws/install/setup.bash && \

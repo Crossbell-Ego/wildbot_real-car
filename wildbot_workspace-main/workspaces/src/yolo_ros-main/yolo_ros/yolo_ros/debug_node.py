@@ -433,7 +433,9 @@ class DebugNode(LifecycleNode):
         @param img_msg Image message
         @param detection_msg Detections message
         """
-        self.get_logger().info(f"收到影像與偵測結果，正在繪製除錯畫面... (檢測到 {len(detection_msg.detections)} 個物體)")
+        # self.get_logger().info(
+        #     f"收到影像與偵測結果，正在繪製除錯畫面... (檢測到 {len(detection_msg.detections)} 個物體)"
+        # )
         cv_image = self.cv_bridge.compressed_imgmsg_to_cv2(img_msg, desired_encoding="bgr8")
         bb_marker_array = MarkerArray()
         kp_marker_array = MarkerArray()

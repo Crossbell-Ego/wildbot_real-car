@@ -1,0 +1,10 @@
+[0.268s] Invoking command in '/workspaces/build/kros_car_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspaces/install/yolo_ros:/workspaces/install/wildbot_control:/workspaces/install/handsfree_imu_ros2:/workspaces/install/arm_ik:/robot_ws/install/lidar_pkg:/opt/ros/jazzy /usr/bin/cmake /workspaces/kros_car_description -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/workspaces/install/kros_car_description
+[0.373s] [33mCMake Warning:
+[0.373s]   Ignoring extra path from command line:
+[0.373s] 
+[0.373s]    "/workspaces/kros_car_description"
+[0.373s] 
+[0.373s] [0m
+[0.374s] [0mCMake Error: The source directory "/workspaces/kros_car_description" does not appear to contain CMakeLists.txt.
+[0.374s] Specify --help for usage, or press the help button on the CMake GUI.[0m
+[0.384s] Invoked command in '/workspaces/build/kros_car_description' returned '1': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspaces/install/yolo_ros:/workspaces/install/wildbot_control:/workspaces/install/handsfree_imu_ros2:/workspaces/install/arm_ik:/robot_ws/install/lidar_pkg:/opt/ros/jazzy /usr/bin/cmake /workspaces/kros_car_description -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/workspaces/install/kros_car_description

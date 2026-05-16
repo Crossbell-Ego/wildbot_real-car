@@ -34,8 +34,14 @@ class PybulletRobotController:
         time_step=1e-3,
     ):
         self.robot_type = robot_type
-        robot_description_path = get_package_share_directory("robot_description")
-        self.urdf_path = os.path.join(robot_description_path, "urdf", "target.urdf")
+        # 優先使用產出的 URDF 檔案
+        self.urdf_path = "/workspaces/kros_car.urdf"
+        if not os.path.exists(self.urdf_path):
+            try:
+                robot_description_path = get_package_share_directory("kros_car_description")
+                self.urdf_path = os.path.join(robot_description_path, "urdf", "kros_car.urdf")
+            except:
+                pass
         self.robot_id = None
         self.num_joints = None
         self.controllable_joints = controllable_joints
@@ -64,7 +70,12 @@ class PybulletRobotController:
             fixedTimeStep=self.time_step, numSolverIterations=100, numSubSteps=10
         )
         p.setRealTimeSimulation(True)
+        # 先載入地面 (在 pybullet_data 路徑下)
         p.loadURDF("plane.urdf")
+        
+        # 切換搜尋路徑到機器人模型目錄 (包含 kros_car_description)
+        p.setAdditionalSearchPath("/robot_ws/install/kros_car_description/share")
+        
         rotation = R.from_euler("z", 90, degrees=True).as_quat()
 
         # loading robot into the environment
