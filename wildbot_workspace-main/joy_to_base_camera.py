@@ -36,6 +36,7 @@ class JoyBaseCameraGripper(Node):
         self.max_linear_x = 0.25      # 前後速度 m/s
         self.max_angular_z = 0.8      # 原地旋轉速度 rad/s
         self.deadzone = 0.08
+        self.emergency_stop_button = 6  # L1 / LB
 
         # =========================
         # Arm fixed pose
@@ -109,6 +110,7 @@ class JoyBaseCameraGripper(Node):
         # 目前底盤速度命令，base_controller 吃 TwistStamped
         self.current_twist = TwistStamped()
         self.current_twist.header.frame_id = 'base_link'
+        self.emergency_stop_active = False
 
         # 定時發布底盤速度，20 Hz
         self.timer = self.create_timer(0.05, self.publish_cmd_vel)
@@ -147,6 +149,30 @@ class JoyBaseCameraGripper(Node):
             return False
 
         return self.last_buttons[index] == 0 and msg.buttons[index] == 1
+
+    def make_stop_twist(self):
+        twist = TwistStamped()
+        twist.header.frame_id = 'base_link'
+        twist.header.stamp = self.get_clock().now().to_msg()
+        return twist
+
+    def stop_base_now(self):
+        self.current_twist = self.make_stop_twist()
+        self.cmd_pub.publish(self.current_twist)
+
+    def stop_arm_now(self):
+        """
+        立即停止手臂：將目標位置同步為當前觀測到的位置並發送。
+        """
+        if not self.arm_initialized:
+            return
+        
+        # 強制將目標點設為目前讀取到的真實位置
+        self.target_joint_positions = list(self.current_joint_positions)
+        
+        # 發送一個極短時間的動作，讓手臂定在原地
+        self.send_arm_goal(self.target_joint_positions, move_time_sec=0.01)
+        self.get_logger().warn("Arm/Gripper movement HALTED.")
 
     def joint_state_callback(self, msg):
         # 從 /joint_states 找出我們需要的關節
@@ -321,6 +347,24 @@ class JoyBaseCameraGripper(Node):
           twist.twist.linear.y 固定為 0.0
         """
 
+        # 改為 Toggle 切換邏輯：按一下鎖定，再按一下解鎖
+        if self.button_pressed(msg, self.emergency_stop_button):
+            self.emergency_stop_active = not self.emergency_stop_active
+            if self.emergency_stop_active:
+                self.get_logger().error('!!! EMERGENCY STOP LOCKED !!! 小車與手臂已強制停死')
+                self.stop_base_now()
+                self.stop_arm_now()
+            else:
+                self.get_logger().error('!!! EMERGENCY STOP UNLOCKED !!! 已解除鎖定，恢復移動與手臂控制')
+            
+            self.last_buttons = list(msg.buttons)
+            return
+
+        # 如果處於即停鎖定狀態，直接無視後續所有手把輸入 (底盤、手臂、夾爪)
+        if self.emergency_stop_active:
+            self.last_buttons = list(msg.buttons)
+            return
+
         left_y = self.apply_deadzone(msg.axes[1]) if len(msg.axes) > 1 else 0.0
         right_x = self.apply_deadzone(msg.axes[0]) if len(msg.axes) > 0 else 0.0
 
@@ -376,8 +420,21 @@ class JoyBaseCameraGripper(Node):
     # Base command
     # =========================
     def publish_cmd_vel(self):
-        self.current_twist.header.stamp = self.get_clock().now().to_msg()
-        self.cmd_pub.publish(self.current_twist)
+        # 如果正在急停，必須強制發布 0.0 以覆蓋其他所有指令
+        if self.emergency_stop_active:
+            self.stop_base_now()
+            return
+
+        # 增加容錯空間 (Deadzone)，確保細微雜訊不會觸發發布
+        is_joy_moving = (
+            abs(self.current_twist.twist.linear.x) > 0.01 or
+            abs(self.current_twist.twist.angular.z) > 0.01
+        )
+
+        # 只有在手把「有動作」時才發布，否則保持沉默，讓位給其他指令 (如 ros2 topic pub)
+        if is_joy_moving:
+            self.current_twist.header.stamp = self.get_clock().now().to_msg()
+            self.cmd_pub.publish(self.current_twist)
 
 
 def main(args=None):

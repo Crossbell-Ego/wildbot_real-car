@@ -45,7 +45,7 @@ fi
 
 # 自動掃描並掛載所有相關設備 (ttyUSB, ttyACM, usb_*)
 DEVICE_ARG=""
-for dev in /dev/ttyUSB* /dev/ttyACM* /dev/usb_* /dev/imu_a9 /dev/ydlidar; do
+for dev in /dev/ttyUSB* /dev/ttyACM* /dev/usb_* /dev/imu_a9 /dev/ydlidar /dev/kfd /dev/dri/renderD128; do
   if [ -e "$dev" ]; then
     DEVICE_ARG="$DEVICE_ARG --device=$dev:$dev"
   fi
@@ -58,12 +58,23 @@ docker run -it \
   --rm \
   --network "$NETWORK_NAME" \
   $DEVICE_ARG \
-  --group-add 20 \
+  --group-add dialout \
+  --group-add video \
+  --group-add render \
+  --env "HSA_OVERRIDE_GFX_VERSION=11.0.0" \
   --env-file "./docker/compose/.env" \
   -v "$(pwd):/workspaces" \
   -v "$(pwd)/docker/compose/configs:/configs" \
   "$IMAGE_NAME" \
-  bash
+  bash -c "echo '====================================================' && \
+           echo '🤖 Wildbot 開發環境已就緒' && \
+           echo '----------------------------------------------------' && \
+           echo '⚠️  安全操控提醒：' && \
+           echo '   - 手把 L1 (LB) 鍵為【即停鎖定開關】(Toggle)' && \
+           echo '   - 按一下：鎖定底盤與手臂 (ERROR 訊息)' && \
+           echo '   - 再按一下：解除鎖定 (WARN 訊息)' && \
+           echo '====================================================' && \
+           exec bash"
 
 # 清理 network（如果沒有其他 container 在用）
 if docker network inspect "$NETWORK_NAME" &>/dev/null; then

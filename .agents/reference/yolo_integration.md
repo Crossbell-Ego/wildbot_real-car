@@ -5,8 +5,8 @@
 
 ## 2. 技術棧與環境 (Tech Stack)
 - **核心架構**: ROS 2 Jazzy (Dockerized)
-- **AI 框架**: Ultralytics YOLOv12 / v26 (Python 3.12)
-- **硬體平台**: AMD Ryzen AI 7 350 (CPU 推論模式)
+- **AI 框架**: Ultralytics YOLOv12 / v26 (Python 3.12 + ROCm 6.1)
+- **硬體平台**: AMD Ryzen AI 7 350 (Radeon 860M GPU 加速模式)
 - **輸入源**: 
     - 影像: `/camera/color/image_raw/compressed`
     - 深度: `/camera/depth/image_raw`
@@ -42,8 +42,10 @@ docker exec -it compose-kros_car-1 bash
 
 ## 4. 關鍵配置與優化 (Optimization)
 
-### A. AMD 平台的 CPU 模式
-由於設備不具備 NVIDIA GPU，已將 `yolov26.launch.py` 中的 `device` 參數強制設定為 `cpu`。
+### A. AMD 平台的 GPU 加速模式 (ROCm)
+透過安裝 **AMD ROCm 6.1** 版 PyTorch，系統已成功啟用 **Radeon 860M** 整合顯卡進行硬體加速，大幅提升推論 FPS。
+- **裝置代號**: 在 PyTorch 與 YOLO 參數中使用 `device:=cuda:0`。
+- **驅動環境**: 容器需掛載 `/dev/kfd` 與 `/dev/dri` 並設定環境變數 `HSA_OVERRIDE_GFX_VERSION=11.0.0` 以確保 RDNA 3.5 架構相容性。
 
 ### B. 壓縮影像話題對接
 為了節省頻寬，YOLO 節點直接訂閱 `/camera/color/image_raw/compressed`。這已在 `yolo_node.py` 中透過相對話題路徑完成修正。
@@ -109,3 +111,11 @@ ros2 topic echo /yolo/detections_3d
 *   **深度不壓縮**：必須訂閱 `/camera/depth/image_raw`，避免 JPEG 損壞深度數值。
 *   **底盤過濾**：已在 `detect_3d_node.py` 加入 `depth > 0.42m` 過濾，防止拍到機器人底盤。
 *   **相信 TF 樹**：不手動交換 X/Y 座標，完全依賴 `/tf` 進行空間投射。
+
+### 7. AMD GPU (ROCm) 硬體加速部署 (2026-05-16)
+*   **任務目標**：由 CPU 推論切換至 **AMD GPU** 全速運行。
+*   **修復與設定重點**：
+    *   **鏡像固化**：將 ROCm 版 PyTorch (`--index-url https://download.pytorch.org/whl/rocm6.1`) 寫入 `Dockerfile`，解決每次重啟都要重新安裝的問題。
+    *   **模型預載**：在 `Dockerfile` 中加入模型預抓指令 (`YOLO('yolov8n.pt')`)，達成「開箱即用」不再等待下載。
+    *   **權限修正**：更新 `launch_shell.sh` 加入 `video` 與 `render` 使用者群組，並自動掛載 GPU 設備文件。
+    *   **兼容性修正**：針對最新款 Ryzen AI 處理器，加入 `HSA_OVERRIDE_GFX_VERSION=11.0.0` 強制啟用硬體加速。

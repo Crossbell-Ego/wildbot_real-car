@@ -36,5 +36,11 @@
 4.  **IMU 特殊路徑**:
     - IMU 驅動位於獨立的工作空間，因此其 source 路徑為 `/workspaces/workspaces/imu_ws/install/setup.bash`。
 
+4.  **操控安全機制 (Safety Control)**:
+    - **急停按鍵**: 手把 **L1 (LB)**。
+    - **切換邏輯 (Toggle)**: 按一下進入鎖定，再按一下解除鎖定。
+    - **鎖定效果**: 底盤強制歸零、手臂原地定住（Freeze）、全面封鎖手把控制訊號。
+    - **解除提示**: 終端機會顯示黃色警告 `!!! EMERGENCY STOP UNLOCKED !!!` 代表已恢復正常。
+
 ---
-*Last Updated: 2026-05-15*
+*Last Updated: 2026-05-16*

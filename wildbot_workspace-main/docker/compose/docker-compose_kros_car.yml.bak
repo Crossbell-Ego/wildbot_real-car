@@ -16,16 +16,8 @@ services:
       - /home/robot/桌面/wildbot_photos:/photos
       - /home/robot/wildbot_real car/wildbot_workspace-main:/workspaces
       - /home/robot/wildbot_real car/wildbot_workspace-main/workspaces/kros_car_persistent.xacro:/robot_ws/src/wildbot-car-description/urdf/kros_car.xacro
-    devices:
-      - /dev/kfd:/dev/kfd
-      - /dev/dri:/dev/dri
-    group_add:
-      - video
-      - render
     networks:
       - my_bridge_network
-    environment:
-      - HSA_OVERRIDE_GFX_VERSION=11.0.0
     command: >
       bash -c "source /opt/ros/jazzy/setup.bash &&
                 ros2 launch kros_car bringup.launch.py"
@@ -55,7 +47,6 @@ services:
       - kros_car
     environment:
       - PYTHONUNBUFFERED=1
-      - HSA_OVERRIDE_GFX_VERSION=11.0.0
     command: >
       bash -lc "source /opt/ros/jazzy/setup.bash &&
                 python3 /workspaces/joy_to_base_camera.py"

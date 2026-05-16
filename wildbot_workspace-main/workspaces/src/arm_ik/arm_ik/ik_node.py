@@ -1,4 +1,10 @@
 import math
+import select
+import sys
+import termios
+import threading
+import tty
+
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Point
@@ -78,6 +84,9 @@ class IKNode(Node):
         self.publish_position_command = bool(self.get_parameter('publish_position_command').value)
         self.release_timer = None
         self.last_positions = None
+        self.current_positions = None
+        self.keyboard_thread = None
+        self.keyboard_enabled = False
 
         if len(self.joint_names) < 2:
             raise ValueError('joint_names must contain at least shoulder and elbow joints')
@@ -105,12 +114,115 @@ class IKNode(Node):
             self.command_pub = self.create_publisher(Float64MultiArray, self.command_topic, 10)
 
         self.sub = self.create_subscription(Point, self.target_topic, self.ik_callback, 10)
+        self.joint_state_sub = self.create_subscription(
+            JointState,
+            self.joint_state_topic,
+            self.joint_state_callback,
+            10
+        )
+        self.start_keyboard_listener()
         self.get_logger().info(
             'arm_ik_node started: joints=%s l1=%.4f l2=%.4f target=%s command=%s'
             % (self.joint_names, self.l1, self.l2, self.target_topic, self.command_topic)
         )
         self.get_logger().info(
             'safety limits: arm_1=[30, 210] deg arm_2=[0, 240] deg gripper=[168, 240] deg'
+        )
+        self.get_logger().info("Press 'i' in this terminal to print current arm angles and gripper X/Z.")
+
+    def start_keyboard_listener(self):
+        if not sys.stdin.isatty():
+            self.get_logger().warn("Keyboard info hotkey disabled: stdin is not a terminal.")
+            return
+
+        self.keyboard_enabled = True
+        self.keyboard_thread = threading.Thread(target=self.keyboard_listener, daemon=True)
+        self.keyboard_thread.start()
+
+    def keyboard_listener(self):
+        fd = sys.stdin.fileno()
+        old_settings = None
+        try:
+            old_settings = termios.tcgetattr(fd)
+            tty.setcbreak(fd)
+            while rclpy.ok() and self.keyboard_enabled:
+                readable, _, _ = select.select([sys.stdin], [], [], 0.1)
+                if not readable:
+                    continue
+
+                char = sys.stdin.read(1)
+                if char in ('i', 'I'):
+                    self.print_current_arm_info()
+                elif char == '\x03':
+                    rclpy.shutdown()
+                    break
+        except termios.error as exc:
+            self.get_logger().warn('Keyboard info hotkey disabled: %s' % exc)
+        finally:
+            if old_settings is not None:
+                try:
+                    termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+                except termios.error:
+                    pass
+
+    def joint_state_callback(self, msg: JointState):
+        positions = []
+        for joint_name in self.joint_names:
+            try:
+                index = msg.name.index(joint_name)
+            except ValueError:
+                return
+
+            if index >= len(msg.position):
+                return
+            positions.append(msg.position[index])
+
+        if len(positions) >= 2:
+            self.current_positions = positions
+
+    def get_display_positions(self):
+        if self.current_positions is not None:
+            return list(self.current_positions)
+        if self.last_positions is not None:
+            return list(self.last_positions)
+        return None
+
+    def get_gripper_xz(self, positions):
+        shoulder_cmd = positions[0]
+        elbow_cmd = positions[1]
+
+        if abs(self.shoulder_direction) < 1e-9 or abs(self.elbow_direction) < 1e-9:
+            raise ValueError('joint direction parameters must be non-zero')
+
+        q1 = (shoulder_cmd - self.shoulder_offset) / self.shoulder_direction
+        q2 = (elbow_cmd - self.elbow_offset) / self.elbow_direction
+
+        x = self.base_x + self.l1 * math.cos(q1) + self.l2 * math.cos(q1 + q2)
+        z = self.base_z + self.l1 * math.sin(q1) + self.l2 * math.sin(q1 + q2)
+        return x, z
+
+    def print_current_arm_info(self):
+        positions = self.get_display_positions()
+        if positions is None:
+            self.get_logger().warn('No arm joint position received yet.')
+            return
+
+        try:
+            gripper_x, gripper_z = self.get_gripper_xz(positions)
+        except ValueError as exc:
+            self.get_logger().error(str(exc))
+            return
+
+        parts = [
+            'arm_1=%.2f deg' % rad_to_deg(positions[0]),
+            'arm_2=%.2f deg' % rad_to_deg(positions[1]),
+        ]
+        if len(positions) > 2:
+            parts.append('gripper=%.2f deg' % rad_to_deg(positions[2]))
+
+        self.get_logger().info(
+            'Current arm: %s | gripper position: x=%.4f m, z=%.4f m'
+            % (', '.join(parts), gripper_x, gripper_z)
         )
 
     def ik_callback(self, msg: Point):
@@ -252,6 +364,7 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
+        node.keyboard_enabled = False
         node.destroy_node()
         rclpy.shutdown()
 

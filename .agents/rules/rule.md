@@ -326,4 +326,5 @@ graph TD
 4.  **IMU 特殊路徑**:
     - IMU 驅動位於獨立的工作空間，因此其 source 路徑為 `/workspaces/workspaces/imu_ws/install/setup.bash`。
 
-
+# 注意事項
+1. 必要時參考.agents/reference內的資料

@@ -20,6 +20,7 @@ ros2 launch arm_ik ik.launch.py
 
 - 在 `joint_states` 發出 `sensor_msgs/JointState`，關節名稱為 `arm_1_joint`、`arm_2_joint`、`gripper_joint`。
 - 在 `/arm_controller/commands` 發出 `std_msgs/Float64MultiArray`，資料順序同上，可接 forward position controller。
+- 在執行 `ik_node` 的終端機按下 `i`，會顯示目前 `arm_1_joint`、`arm_2_joint`、`gripper_joint` 角度，以及夾爪中心的 `x` / `z` 座標。
 
 重要參數：
 

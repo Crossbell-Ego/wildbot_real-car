@@ -19,9 +19,7 @@ RUN apt-get update && \
 
 # B. AI 庫安裝 (獨立一層，解決 NumPy 衝突)
 RUN pip3 install --no-cache-dir --break-system-packages pip setuptools && \
-    pip3 install --no-cache-dir --break-system-packages "numpy<2" ultralytics pybullet lap filterpy && \
-    pip3 install --no-cache-dir --break-system-packages torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1 && \
-    python3 -c "from ultralytics import YOLO; YOLO('yolov8n.pt'); YOLO('yolov8m.pt')"
+    pip3 install --no-cache-dir --break-system-packages "numpy<2" ultralytics torch torchvision pybullet lap filterpy
 
 # C. YDLidar-SDK 安裝
 RUN git clone https://github.com/YDLIDAR/YDLidar-SDK.git /tmp/YDLidar-SDK && \

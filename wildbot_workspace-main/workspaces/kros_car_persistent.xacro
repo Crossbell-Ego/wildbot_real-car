@@ -535,6 +535,21 @@
 </joint>
 
 <joint name="Rigid 2" type="fixed">
+  <origin xyz="0.134497 -0.127581 0.110239" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="upper_silver_v1_1"/>
+</joint>
+
+<joint name="Rigid 3" type="fixed">
+  <origin xyz="-0.150487 0.0 0.074934" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="Side_U_Bracket_Component1_v2_1"/>
+</joint>
+
+<joint name="Rigid 4" type="fixed">
+  <origin xyz="-0.007313 0.02025 -0.017533" rpy="0 0 0"/>
+  <parent link="Side_U_Bracket_Component1_v2_1"/>
+  <child link="new_motor_v2_1"/>
 </joint>
 
 <joint name="Rigid 27" type="fixed">

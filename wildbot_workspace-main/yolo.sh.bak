@@ -13,8 +13,7 @@ sleep 1
 ros2 launch yolo_bringup yolov26.launch.py \
     use_3d:=False \
     use_tracking:=False \
-    target_frame:=base_link \
-    device:=cuda:0 &
+    target_frame:=base_link &
 
 # 等待節點出現並手動激活
 wait_for_activation() {
