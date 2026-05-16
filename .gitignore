@@ -19,7 +19,13 @@ obj/
 frames*.pdf
 frames*.gv
 
-# Python
+# YOLO Models
+*.pt
+*.onnx
+*.xml
+*.bin
+*.engine
+*_openvino_model/
 __pycache__/
 *.py[cod]
 *$py.class
