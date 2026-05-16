@@ -17,6 +17,7 @@ import cv2
 from control_msgs.action import FollowJointTrajectory
 from trajectory_msgs.msg import JointTrajectoryPoint
 from sensor_msgs.msg import JointState
+from arm_interface import ArmInterface
 
 
 class JoyBaseCameraGripper(Node):
@@ -66,11 +67,18 @@ class JoyBaseCameraGripper(Node):
             10
         )
 
+        from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
+        joy_qos = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=1
+        )
+
         self.joy_sub = self.create_subscription(
             Joy,
             self.joy_topic,
             self.joy_callback,
-            10
+            joy_qos
         )
 
         self.image_sub = self.create_subscription(
@@ -88,22 +96,10 @@ class JoyBaseCameraGripper(Node):
             10
         )
 
-        self.arm_client = ActionClient(
-            self,
-            FollowJointTrajectory,
-            '/arm_controller/follow_joint_trajectory'
-        )
-
-        self.bridge = CvBridge()
+        # 初始化通用手臂接口
+        self.arm = ArmInterface(self)
+        
         self.latest_image = None
-
-        # 防止按鍵長按連續觸發
-        self.last_buttons = []
-
-        # 拍照冷卻時間
-        self.target_joint_positions = [0.0, 0.0, 0.0, 0.0]
-        self.current_joint_positions = [0.0, 0.0, 0.0, 0.0]
-        self.arm_initialized = False  # 安全鎖：未讀到目前位置前不准動
         self.last_photo_time = 0.0
         self.photo_cooldown = 0.8
 
@@ -112,8 +108,8 @@ class JoyBaseCameraGripper(Node):
         self.current_twist.header.frame_id = 'base_link'
         self.emergency_stop_active = False
 
-        # 定時發布底盤速度，20 Hz
-        self.timer = self.create_timer(0.05, self.publish_cmd_vel)
+        # 定時發布底盤速度，50 Hz (減少延遲)
+        self.timer = self.create_timer(0.02, self.publish_cmd_vel)
 
         self.get_logger().info('Checking arm_controller action server...')
         if not self.arm_client.wait_for_server(timeout_sec=20.0):
@@ -160,75 +156,6 @@ class JoyBaseCameraGripper(Node):
         self.current_twist = self.make_stop_twist()
         self.cmd_pub.publish(self.current_twist)
 
-    def stop_arm_now(self):
-        """
-        立即停止手臂：將目標位置同步為當前觀測到的位置並發送。
-        """
-        if not self.arm_initialized:
-            return
-        
-        # 強制將目標點設為目前讀取到的真實位置
-        self.target_joint_positions = list(self.current_joint_positions)
-        
-        # 發送一個極短時間的動作，讓手臂定在原地
-        self.send_arm_goal(self.target_joint_positions, move_time_sec=0.01)
-        self.get_logger().warn("Arm/Gripper movement HALTED.")
-
-    def joint_state_callback(self, msg):
-        # 從 /joint_states 找出我們需要的關節
-        try:
-            arm_1_idx = msg.name.index('arm_1_joint')
-            arm_2_idx = msg.name.index('arm_2_joint')
-            gripper_idx = msg.name.index('gripper_joint')
-            
-            # 更新目前位置
-            self.current_joint_positions = [
-                msg.position[arm_1_idx],
-                msg.position[arm_2_idx],
-                msg.position[gripper_idx]
-            ]
-            
-            # 如果還沒初始化，進行同步並解鎖
-            if not self.arm_initialized:
-                self.target_joint_positions = list(self.current_joint_positions)
-                self.arm_initialized = True
-                self.get_logger().warn("!!! ARM POSITION SYNCED & UNLOCKED !!!")
-        except (ValueError, IndexError):
-            # 如果還沒在 /joint_states 看到這些關節，先跳過
-            pass
-
-    def arm_feedback_callback(self, feedback):
-        pass
-
-    def send_arm_goal(self, positions, move_time_sec=0.1):
-        # 安全檢查
-        if not self.arm_initialized:
-            return
-
-        if not self.arm_client.wait_for_server(timeout_sec=1.0):
-            self.get_logger().error('Action server not available!')
-            return
-
-        goal_msg = FollowJointTrajectory.Goal()
-        goal_msg.trajectory.joint_names = [
-            'arm_1_joint', 
-            'arm_2_joint', 
-            'gripper_joint'
-        ]
-
-        point = JointTrajectoryPoint()
-        point.positions = positions
-        
-        sec = int(move_time_sec)
-        nanosec = int((move_time_sec - sec) * 1e9)
-        point.time_from_start.sec = sec
-        point.time_from_start.nanosec = nanosec
-
-        goal_msg.trajectory.points = [point]
-        
-        # 連續發送時不印出 feedback 避免洗頻
-        self.arm_client.send_goal_async(goal_msg)
-
     # =========================
     # Camera
     # =========================
@@ -270,63 +197,17 @@ class JoyBaseCameraGripper(Node):
         except Exception as e:
             self.get_logger().error(f'Failed to save photo: {e}')
 
-    # =========================
-    # Gripper / Arm
-    # =========================
-    def increment_arm_1(self, delta_rad):
-        if not self.arm_initialized:
-            return
-            
-        # arm_1 在 index 0
-        current = self.target_joint_positions[0]
-        new_val = max(0.0, min(4.189, current + delta_rad))
-        
-        if abs(new_val - current) > 0.001:
-            self.target_joint_positions[0] = new_val
-            self.send_arm_goal(self.target_joint_positions, move_time_sec=0.1)
-
-    def increment_arm_2(self, delta_rad):
-        if not self.arm_initialized:
-            return
-            
-        # arm_2 在 index 1
-        current = self.target_joint_positions[1]
-        new_val = max(0.0, min(4.189, current + delta_rad))
-        
-        if abs(new_val - current) > 0.001:
-            self.target_joint_positions[1] = new_val
-            self.send_arm_goal(self.target_joint_positions, move_time_sec=0.1)
-
-    def increment_gripper(self, delta_rad):
-        if not self.arm_initialized:
-            return
-            
-        # 夾爪在 index 2
-        current = self.target_joint_positions[2]
-        new_val = max(2.93, min(4.19, current + delta_rad))
-        
-        if abs(new_val - current) > 0.001:
-            self.target_joint_positions[2] = new_val
-            # arm_1, arm_2 保持 target_joint_positions 裡面的當前值，只有夾爪改變
-            self.send_arm_goal(self.target_joint_positions, move_time_sec=0.1)
-
     def gripper_open(self):
         self.get_logger().info('Gripper open.')
-        if self.arm_initialized:
-            self.target_joint_positions[2] = 4.19
-            self.send_arm_goal(self.target_joint_positions, move_time_sec=1.0)
+        self.arm.send_goal([self.arm.current_positions[0], self.arm.current_positions[1], 4.19], duration=1.0)
 
     def gripper_half_close(self):
         self.get_logger().info('Gripper half close.')
-        if self.arm_initialized:
-            self.target_joint_positions[2] = 3.14
-            self.send_arm_goal(self.target_joint_positions, move_time_sec=1.0)
+        self.arm.send_goal([self.arm.current_positions[0], self.arm.current_positions[1], 3.14], duration=1.0)
 
     def gripper_safe_close(self):
         self.get_logger().warn('Gripper close to safe limit.')
-        if self.arm_initialized:
-            self.target_joint_positions[2] = 2.93
-            self.send_arm_goal(self.target_joint_positions, move_time_sec=1.0)
+        self.arm.send_goal([self.arm.current_positions[0], self.arm.current_positions[1], 2.93], duration=1.0)
 
     # =========================
     # Joystick
@@ -353,7 +234,11 @@ class JoyBaseCameraGripper(Node):
             if self.emergency_stop_active:
                 self.get_logger().error('!!! EMERGENCY STOP LOCKED !!! 小車與手臂已強制停死')
                 self.stop_base_now()
-                self.stop_arm_now()
+                # 立即停止手臂：將目標位置同步為當前觀測到的位置並發送。
+                self.arm.sync_targets()
+                self.arm.send_goal(self.arm.current_positions, duration=0.01)
+                self.arm.horizontal_sum = None
+                self.get_logger().warn("Arm/Gripper movement HALTED.")
             else:
                 self.get_logger().error('!!! EMERGENCY STOP UNLOCKED !!! 已解除鎖定，恢復移動與手臂控制')
             
@@ -372,8 +257,8 @@ class JoyBaseCameraGripper(Node):
         twist.header.frame_id = 'base_link'
         twist.header.stamp = self.get_clock().now().to_msg()
 
-        # 前進 / 後退 (Jazzy 底盤通常 - 為前進，視馬達接線而定)
-        twist.twist.linear.x = -left_y * self.max_linear_x
+        # 前進 / 後退 (修正方向：移除負號以符合實際搖桿操作)
+        twist.twist.linear.x = left_y * self.max_linear_x
 
         # 不使用平移
         twist.twist.linear.y = 0.0
@@ -390,29 +275,35 @@ class JoyBaseCameraGripper(Node):
 
         # Y (按鈕 4): 控制 joint 1 往上
         if len(msg.buttons) > 4 and msg.buttons[4] == 1:
-            self.increment_arm_1(-0.05)
+            self.arm.move_arm_1(-0.01)
 
         # A (按鈕 0): 控制 joint 1 往下
         if len(msg.buttons) > 0 and msg.buttons[0] == 1:
-            self.increment_arm_1(0.05)
+            self.arm.move_arm_1(0.01)
 
         # X (按鈕 2 或 3): 控制 joint 2 往上
         if (len(msg.buttons) > 2 and msg.buttons[2] == 1) or (len(msg.buttons) > 3 and msg.buttons[3] == 1):
-            self.increment_arm_2(-0.05)
+            self.arm.move_arm_2(-0.01)
             if self.button_pressed(msg, 2) or self.button_pressed(msg, 3):
                 self.take_picture()
 
         # B (按鈕 1): 控制 joint 2 往下
         if len(msg.buttons) > 1 and msg.buttons[1] == 1:
-            self.increment_arm_2(0.05)
+            self.arm.move_arm_2(0.01)
 
         # L2 (按鈕 8)：按住持續打開
         if len(msg.buttons) > 8 and msg.buttons[8] == 1:
-            self.increment_gripper(0.08)  # 數字越大開越快
+            self.arm.move_gripper(0.02)  # 調降速度
 
         # R2 (按鈕 9)：按住持續閉合
         if len(msg.buttons) > 9 and msg.buttons[9] == 1:
-            self.increment_gripper(-0.08) # 數字越小合越快
+            self.arm.move_gripper(-0.02) # 調降速度
+
+        # 右搖桿左右 (Index 2): 水平連動控制 (保持第二軸與地面水平)
+        right_x_stick = self.apply_deadzone(msg.axes[2]) if len(msg.axes) > 2 else 0.0
+        if abs(right_x_stick) > 0.05:
+            # 向右推 (1.0) 時 delta 為負，大臂往上 (arm_1 減少)，小臂自動反向補償 -> 伸長
+            self.arm.move_horizontal(-right_x_stick * 0.01)
 
         self.last_buttons = list(msg.buttons)
 

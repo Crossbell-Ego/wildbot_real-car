@@ -1,3 +1,32 @@
-.docker_build_hash
+# ROS 2 Build & Log Folders
+build/
+install/
+log/
+workspaces/build/
 workspaces/install/
 workspaces/log/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# System Files
+.DS_Store
+.docker_build_hash
+
+# IDE settings
+.vscode/
+.idea/
+
+# Custom data (optional, but often kept out of git)
+*.json.bak
+captured_poses.txt
+
+# YOLO Models & Weights
+*.pt
+*.onnx
+*.engine
+*.weights
+*.blob
