@@ -77,6 +77,18 @@ class ArmInterface:
         # 基礎單軸角度限位
         sq1 = max(self.LIMITS['arm_1'][0], min(self.LIMITS['arm_1'][1], q1))
         sq2 = max(self.LIMITS['arm_2'][0], min(self.LIMITS['arm_2'][1], q2))
+        
+        if q1 < self.LIMITS['arm_1'][0] or q1 > self.LIMITS['arm_1'][1]:
+            self.node.get_logger().warn(
+                f"⚠️ 大臂 (arm_1_joint) 嘗試超出安全限制 {math.degrees(self.LIMITS['arm_1'][0]):.1f}° ~ {math.degrees(self.LIMITS['arm_1'][1]):.1f}°，目前已攔截並限制在 {math.degrees(sq1):.1f}°！",
+                throttle_duration_sec=1.0
+            )
+        if q2 < self.LIMITS['arm_2'][0] or q2 > self.LIMITS['arm_2'][1]:
+            self.node.get_logger().warn(
+                f"⚠️ 小臂 (arm_2_joint) 嘗試超出安全限制 {math.degrees(self.LIMITS['arm_2'][0]):.1f}° ~ {math.degrees(self.LIMITS['arm_2'][1]):.1f}°，目前已攔截並限制在 {math.degrees(sq2):.1f}°！",
+                throttle_duration_sec=1.0
+            )
+            
         return sq1, sq2
 
     def joint_state_callback(self, msg):
@@ -231,3 +243,22 @@ class ArmInterface:
         self.target_positions[0] = new_q1
         self.target_positions[1] = new_q2
         self.send_goal(self.target_positions)
+
+    def move_gripper(self, delta):
+        """控制夾爪開合 (漸進/增量式)。"""
+        if not self.initialized: return
+        self.sync_targets()
+        
+        raw_gripper = self.target_positions[2] + delta
+        # 安全限制：全開 4.19 rad (240度)，閉合極限 2.93 rad (168度)
+        new_gripper = max(2.93, min(4.19, raw_gripper))
+        
+        if raw_gripper < 2.93 or raw_gripper > 4.19:
+            self.node.get_logger().warn(
+                f"⚠️ 夾爪 (gripper_joint) 嘗試超出安全限制 168.0° (2.93 rad) ~ 240.0° (4.19 rad)，目前已攔截並限制在 {math.degrees(new_gripper):.1f}°！",
+                throttle_duration_sec=1.0
+            )
+        
+        self.target_positions[2] = new_gripper
+        self.send_goal(self.target_positions)
+

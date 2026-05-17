@@ -203,10 +203,7 @@ class JoyBaseCameraGripper(Node):
 
         self.current_twist = twist
 
-        # 偵錯用：印出按下的按鍵編號，方便確認 Y 鍵是幾號
-        for i, b in enumerate(msg.buttons):
-            if b == 1:
-                self.get_logger().warn(f"BUTTON PRESSED: {i}")
+
 
         # 限制手臂控制指令發送頻率 (避免高頻手把事件瘋狂搶佔 Action 導致抖動與卡頓)
         now = self.get_clock().now().nanoseconds / 1e9
@@ -225,12 +222,21 @@ class JoyBaseCameraGripper(Node):
                 # 尚未中位，強制設為 0.0 避免暴衝
                 right_y_stick = 0.0
 
+        l2_pressed = False
+        r2_pressed = False
+        if len(msg.axes) > 4:
+            # 類比扳機預設為 1.0，按壓時值會減少至 0.1 以下
+            l2_pressed = (msg.axes[4] < 0.1)
+        if len(msg.axes) > 5:
+            r2_pressed = (msg.axes[5] < 0.1)
+
         has_arm_input = False
         if len(msg.buttons) > 4 and msg.buttons[4] == 1: has_arm_input = True
         if len(msg.buttons) > 0 and msg.buttons[0] == 1: has_arm_input = True
         if (len(msg.buttons) > 2 and msg.buttons[2] == 1) or (len(msg.buttons) > 3 and msg.buttons[3] == 1): has_arm_input = True
         if len(msg.buttons) > 1 and msg.buttons[1] == 1: has_arm_input = True
         if abs(right_y_stick) > 0.05: has_arm_input = True
+        if l2_pressed or r2_pressed: has_arm_input = True
 
         if has_arm_input:
             if now - self.last_arm_cmd_time < 0.040:  # 提升至 25Hz (40ms) 發送頻率，達到真實即時控制
@@ -253,6 +259,14 @@ class JoyBaseCameraGripper(Node):
         # B (按鈕 1): 控制 joint 2 往下
         if len(msg.buttons) > 1 and msg.buttons[1] == 1:
             self.arm.move_arm_2(0.040)
+
+        # 💡 L2 鍵 (LT 類比，msg.axes[4]) 按住：夾爪持續張開 (增量控制)
+        if l2_pressed:
+            self.arm.move_gripper(0.040)
+
+        # 💡 R2 鍵 (RT 類比，msg.axes[5]) 按住：夾爪持續閉合 (增量控制)
+        if r2_pressed:
+            self.arm.move_gripper(-0.040)
 
 
         # 右搖桿左右：無功能
