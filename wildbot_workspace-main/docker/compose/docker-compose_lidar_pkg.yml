@@ -1,11 +1,17 @@
 services:
   lidar_pkg:
-    image: ghcr.io/screamlab/wildbot_base_image:latest
+    image: wildbot_workspace:latest
     env_file:
       - .env
+    volumes:
+      - ../..:/workspaces
     networks:
       - my_bridge_network
-    command: "ros2 run lidar_pkg lidar_nan_value_filter_node"
+    command: >
+      bash -c "source /opt/ros/jazzy/setup.bash &&
+                source /workspaces/install/setup.bash &&
+                ros2 launch lidar_pkg self_filter_launch.py
+                params_file:=/workspaces/workspaces/src/lidar_pkg/config/self_filter.yaml"
 
 # This will create a docker bridge network
 # You can see the network by docker network ls

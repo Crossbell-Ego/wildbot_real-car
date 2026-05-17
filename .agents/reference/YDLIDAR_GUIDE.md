@@ -40,7 +40,36 @@ SUBSYSTEM=="tty", ENV{ID_PATH}=="pci-0000:68:00.0-usb-0:2:1.0", MODE="0666", SYM
 | `intensity` | `true` | **必填**：TG30 會發送 16-bit 強度數據，不開啟會導致校驗錯誤 |
 | `frequency` | `10.0` | 標準掃描頻率 10Hz |
 
-## 5. 常見錯誤診斷
+## 5. 自車反射過濾 (`/scan_tmp` -> `/scan`)
+
+Wildbot 的雷達會掃到車體本身時，不要直接讓 SLAM/Nav2 訂閱原始 `/scan`。目前流程設定為：
+
+1. `ydlidar_ros2_driver` 原始資料 remap 到 `/scan_tmp`。
+2. `lidar_pkg/lidar_nan_value_filter_node` 訂閱 `/scan_tmp`。
+3. filter 節點把 NaN、0、超出範圍、以及自車遮罩區域改成 `+inf`，再發布乾淨的 `/scan`。
+
+自車遮罩設定檔：
+
+```bash
+wildbot_workspace-main/workspaces/src/lidar_pkg/config/self_filter.yaml
+```
+
+遮罩格式為 `"start_deg:end_deg:max_range_m"`，角度以雷達 frame 為準：
+
+```yaml
+self_mask_sectors:
+  - "-45:45:0.55"      # 前方 90 度，55cm 內視為車體
+  - "135:180:0.45"     # 後方左半
+  - "-180:-135:0.45"   # 後方右半
+```
+
+調整建議：
+
+*   在 RViz 顯示 `/scan_tmp`，找出固定貼著車體的角度。
+*   只增加會掃到車體的角度區間，不要把整圈近距離都濾掉，否則近距離障礙物會被隱藏。
+*   修改後重新啟動 LiDAR/filter 服務，確認 `/scan` 中自車殘影消失。
+
+## 6. 常見錯誤診斷
 
 *   **Checksum error**：
     *   檢查是否開啟了 `privileged: true`。

@@ -1,0 +1,16 @@
+lidar_nan_value_filter_node:
+  ros__parameters:
+    input_topic: /scan_tmp
+    output_topic: /scan
+
+    # Use +inf so SLAM/Nav2 ignore masked beams instead of treating them as hits.
+    use_inf_for_invalid: true
+    replace_nan: true
+    replace_zero: true
+
+    # Format: "start_deg:end_deg:max_range_m".
+    # Angles are in the LiDAR frame. Tune these in RViz to match the parts of
+    # Wildbot that appear as fixed close-range returns.
+    self_mask_enabled: true
+    self_mask_sectors:
+      - "105:210:1.1"
