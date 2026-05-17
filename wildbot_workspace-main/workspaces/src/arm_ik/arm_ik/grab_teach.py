@@ -58,9 +58,11 @@ class GrabTeach(Node):
             
             q_deg = [math.degrees(x) for x in pos]
             x_m, z_m = self.arm.get_joint2_coordinates(pos[0])
+            x_g, z_g = self.arm.get_coordinates(pos[0], pos[1])
             
             print(f"\n✅ [已紀錄點位 {slot}]")
-            print(f"   第二軸旋轉中心坐標: X: {x_m*100:.1f} cm, Z(離地): {z_m*100:.1f} cm")
+            print(f"   第二軸中心座標: X: {x_m*100:.1f} cm, Z(離地): {z_m*100:.1f} cm")
+            print(f"   夾爪抓取點座標: X: {x_g*100:.1f} cm, Z(離地): {z_g*100:.1f} cm")
             print(f"   角度 (Deg): Q1={q_deg[0]:.1f}, Q2={q_deg[1]:.1f}, Grip={q_deg[2]:.1f}")
             print(f"   弧度 (Rad): {pos}")
             print(f"💾 檔案已更新: {self.pose_file}")
@@ -88,10 +90,12 @@ class GrabTeach(Node):
         q = self.arm.current_positions
         t = self.arm.temperatures
         x_m, z_m = self.arm.get_joint2_coordinates(q[0])
+        x_g, z_g = self.arm.get_coordinates(q[0], q[1])
         
         status_line = "🔥 [過熱鎖定]" if self.arm.overheated else "✅ [狀態正常]"
         print(f"\n{status_line}")
-        print(f"📍 [第二軸旋轉中心實時座標] X: {x_m*100:.1f} cm, Z(離地): {z_m*100:.1f} cm")
+        print(f"📍 [第二軸中心實時座標] X: {x_m*100:.1f} cm, Z(離地): {z_m*100:.1f} cm")
+        print(f"📍 [夾爪抓取點實時座標] X: {x_g*100:.1f} cm, Z(離地): {z_g*100:.1f} cm")
         print(f"🌡️  [馬達溫度] Q1: {t[0]:.1f}°C, Q2: {t[1]:.1f}°C, Grip: {t[2]:.1f}°C")
         print(f"⚙️  [實時角度] Q1: {math.degrees(q[0]):.1f}°, Q2: {math.degrees(q[1]):.1f}°, Grip: {math.degrees(q[2]):.1f}°")
 

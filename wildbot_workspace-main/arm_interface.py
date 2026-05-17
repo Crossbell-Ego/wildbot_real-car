@@ -63,19 +63,32 @@ class ArmInterface:
 
     def get_coordinates(self, q1, q2):
         """
-        計算夾爪在 base_link 座標系下的實時位置 (X, Z)。
-        (註：此功能僅供顯示參考，不參與安全攔截)
+        計算夾爪（抓取點）在 base_link 座標系下的實時位置 (X, Z)（包含實體皮尺對位校準）。
+        當小臂水平時，其 Z 軸高度將與第二軸中心完全一致。
         """
-        x = self.BASE_X + self.L1 * math.cos(q1) + self.L2 * math.cos(q1 + q2)
-        z = self.BASE_Z + self.L1 * math.sin(q1) + self.L2 * math.sin(q1 + q2)
+        theta1 = 2.0 - q1
+        
+        # 實測完美水平時 q1 + q2 = 4.12177 rad，此時物理傾角 theta2 為 0
+        theta2 = 4.12177 - (q1 + q2)
+        
+        base_z_ground = 0.1266
+        
+        x = self.BASE_X + self.L1 * math.cos(theta1) + self.L2 * math.cos(theta2)
+        z = base_z_ground + self.L1 * math.sin(theta1) + self.L2 * math.sin(theta2)
         return x, z
 
     def get_joint2_coordinates(self, q1):
         """
-        計算第二軸 (arm_2_joint) 在 base_link 座標系下的位置 (X, Z)。
+        計算第二軸 (arm_2_joint) 在 base_link 座標系下的位置 (X, Z)（包含實體皮尺對位校準）。
         """
-        x = self.BASE_X + self.L1 * math.cos(q1)
-        z = self.BASE_Z + self.L1 * math.sin(q1)
+        # 實體皮尺對位校準映射關係
+        theta1 = 2.0 - q1
+        
+        # 第一軸旋轉中心實際離地高度為 12.66 cm (0.1266 m)
+        base_z_ground = 0.1266
+        
+        x = self.BASE_X + self.L1 * math.cos(theta1)
+        z = base_z_ground + self.L1 * math.sin(theta1)
         return x, z
 
 
@@ -234,15 +247,14 @@ class ArmInterface:
         self.send_goal(self.target_positions)
 
     def move_horizontal(self, delta):
-        """水平連動控制：保持小臂與地面目前的相對水平姿態。"""
+        """水平連動控制：保持小臂與地面絕對水平（夾爪與第二軸中心同高）。"""
         if not self.initialized: return
         self.sync_targets()
         
-        # 修正：直接鎖定當前的絕對角度總和，不加入突波補償
-        if self.horizontal_sum is None:
-            self.horizontal_sum = self.target_positions[0] + self.target_positions[1]
+        # 強制小臂與地面絕對水平，根據實體校準點位，完美水平時 q1 + q2 = 4.12177
+        self.horizontal_sum = 4.12177
         
-        # 計算初步目標 (大臂前進 delta，小臂自動退回對應角度)
+        # 計算初步目標 (大臂前進 delta，小臂自動反向跟隨以保持絕對水平)
         raw_q1 = self.target_positions[0] + delta
         raw_q2 = self.horizontal_sum - raw_q1
         

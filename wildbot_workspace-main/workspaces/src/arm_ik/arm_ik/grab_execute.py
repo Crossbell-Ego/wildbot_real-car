@@ -44,8 +44,12 @@ class GrabExecutor(Node):
         # 計算抵達後的實時座標
         q = self.arm.current_positions
         x_m, z_m = self.arm.get_joint2_coordinates(q[0])
+        x_g, z_g = self.arm.get_coordinates(q[0], q[1])
         
-        self.get_logger().info(f"✅ 抵達點位 [{slot_name}] (第二軸 X: {x_m*100:.1f} cm, Z(離地): {z_m*100:.1f} cm)")
+        self.get_logger().info(
+            f"✅ 抵達點位 [{slot_name}] (第二軸 X: {x_m*100:.1f} cm, Z(離地): {z_m*100:.1f} cm | "
+            f"夾爪 X: {x_g*100:.1f} cm, Z(離地): {z_g*100:.1f} cm)"
+        )
         return True
 
 def main():
