@@ -36,3 +36,11 @@ Thumbs.db
 
 # Large third-party source packages (pre-installed in ROS Jazzy)
 wildbot_workspace-main/workspaces/src/geometry2/
+
+# ROS 2 build, install, and log directories
+build/
+install/
+log/
+wildbot_workspace-main/build/
+wildbot_workspace-main/install/
+wildbot_workspace-main/log/
