@@ -70,6 +70,15 @@ class ArmInterface:
         z = self.BASE_Z + self.L1 * math.sin(q1) + self.L2 * math.sin(q1 + q2)
         return x, z
 
+    def get_joint2_coordinates(self, q1):
+        """
+        計算第二軸 (arm_2_joint) 在 base_link 座標系下的位置 (X, Z)。
+        """
+        x = self.BASE_X + self.L1 * math.cos(q1)
+        z = self.BASE_Z + self.L1 * math.sin(q1)
+        return x, z
+
+
     def check_safety(self, q1, q2):
         """
         基礎單軸角度限位安全檢查。
