@@ -1,3 +1,0 @@
-[0.359s] Invoking command in '/workspaces/build/ydlidar_ros2_driver': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspaces/install/yolo_ros:/workspaces/install/wildbot_control:/workspaces/install/handsfree_imu_ros2:/workspaces/install/arm_ik:/robot_ws/install/lidar_pkg:/opt/ros/jazzy /usr/bin/cmake --build /workspaces/build/ydlidar_ros2_driver -- -j16 -l16
-[0.396s] [ 50%] Built target ydlidar_ros2_driver_node
-[0.397s] [100%] Built target ydlidar_ros2_driver_client

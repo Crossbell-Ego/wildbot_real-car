@@ -1,1 +1,0 @@
-/workspaces/workspaces/src/ydlidar_ros2_driver/launch/x3_ydlidar_launch.py

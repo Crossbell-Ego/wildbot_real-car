@@ -1,6 +1,6 @@
 services:
   rosbridge:
-    image: ghcr.io/screamlab/wildbot_base_image:latest
+    image: wildbot_workspace:latest
     env_file:
       - .env
     networks:
