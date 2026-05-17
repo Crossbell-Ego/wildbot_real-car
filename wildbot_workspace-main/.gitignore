@@ -30,3 +30,6 @@ captured_poses.txt
 *.engine
 *.weights
 *.blob
+
+# Large third-party source packages (pre-installed in ROS Jazzy)
+workspaces/src/geometry2/

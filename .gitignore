@@ -33,3 +33,6 @@ __pycache__/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Large third-party source packages (pre-installed in ROS Jazzy)
+wildbot_workspace-main/workspaces/src/geometry2/
