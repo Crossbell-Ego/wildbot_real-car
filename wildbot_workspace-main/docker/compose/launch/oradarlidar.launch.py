@@ -3,8 +3,7 @@ from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription
 from launch_ros.substitutions import FindPackageShare
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from ament_index_python.packages import get_package_share_directory  # 加入這一行
-from ament_index_python.packages import get_package_share_directory  # 加入這一行
+from ament_index_python.packages import get_package_share_directory
 import os
 
 def generate_launch_description():
@@ -24,15 +23,6 @@ def generate_launch_description():
         }.items()
     )
 
-    # 設定 laser 到 base_link 的靜態 TF
-    tf2_node = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='static_tf_pub_laser',
-        arguments=['0.165', '0', '0.18', '0', '0', '0', 'base_link','laser'],
-    )
-
     return LaunchDescription([
         lidar_driver,
-        tf2_node,
     ])

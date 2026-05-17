@@ -52,7 +52,7 @@ class ImuA9RpyNode(Node):
                 a9.handleSerialData(buff_data[i])
 
         roll = float(a9.angle_degree[0])
-        pitch = float(a9.angle_degree[1])
+        pitch = float(a9.angle_degree[1]) # 還原標準順序
         yaw = float(a9.angle_degree[2])
 
         current_rpy = (roll, pitch, yaw)

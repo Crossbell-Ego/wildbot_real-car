@@ -13,4 +13,4 @@ lidar_nan_value_filter_node:
     # Wildbot that appear as fixed close-range returns.
     self_mask_enabled: true
     self_mask_sectors:
-      - "105:210:1.1"
+      - "95:220:1.1"

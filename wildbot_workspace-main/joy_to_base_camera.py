@@ -26,8 +26,8 @@ class JoyBaseCameraGripper(Node):
         # =========================
         # Speed settings
         # =========================
-        self.max_linear_x = 0.25      # 前後速度 m/s
-        self.max_angular_z = 0.8      # 原地旋轉速度 rad/s
+        self.max_linear_x = 0.45      # 前後速度 m/s (已提高)
+        self.max_angular_z = 0.4      # 原地旋轉速度 rad/s (已調慢)
         self.deadzone = 0.08
         self.emergency_stop_button = 6  # L1 / LB
 
@@ -75,6 +75,7 @@ class JoyBaseCameraGripper(Node):
         self.arm = ArmInterface(self)
         
         self.last_buttons = None
+        self.last_axes = None
         self.axes_neutralized = False  # 💡 安全防護：啟動時必須等待所有搖桿回到中位，才開始控制手臂，避免暴衝！
 
         # 目前底盤速度命令，base_controller 吃 TwistStamped
@@ -178,12 +179,54 @@ class JoyBaseCameraGripper(Node):
                 self.get_logger().error('!!! EMERGENCY STOP UNLOCKED !!! 已解除鎖定，恢復移動與手臂控制')
             
             self.last_buttons = list(msg.buttons)
+            self.last_axes = list(msg.axes)
             return
 
         # 如果處於即停鎖定狀態，直接無視後續所有手把輸入 (底盤、手臂、夾爪)
         if self.emergency_stop_active:
             self.last_buttons = list(msg.buttons)
+            self.last_axes = list(msg.axes)
             return
+
+        # ==========================================
+        # 1. 十字方向鍵 (D-pad) 實時微調前後速度限制與自轉速度限制
+        # ==========================================
+        dpad_up_pressed = False
+        dpad_down_pressed = False
+        dpad_left_pressed = False
+        dpad_right_pressed = False
+
+        if len(msg.axes) > 7:
+            last_ax6 = self.last_axes[6] if self.last_axes and len(self.last_axes) > 6 else 0.0
+            last_ax7 = self.last_axes[7] if self.last_axes and len(self.last_axes) > 7 else 0.0
+            
+            # axes[7] 控制前後速度限制：下鍵 1.0 (減速)，上鍵 -1.0 (加速)
+            if last_ax7 != -1.0 and msg.axes[7] == -1.0:
+                dpad_up_pressed = True
+            elif last_ax7 != 1.0 and msg.axes[7] == 1.0:
+                dpad_down_pressed = True
+                
+            # axes[6] 控制自轉速度限制：左鍵 1.0 (加速)，右鍵 -1.0 (減速)
+            if last_ax6 != 1.0 and msg.axes[6] == 1.0:
+                dpad_left_pressed = True
+            elif last_ax6 != -1.0 and msg.axes[6] == -1.0:
+                dpad_right_pressed = True
+
+        # 調整前後速度限制 max_linear_x (步長 0.05, 範圍 0.05 ~ 1.0)
+        if dpad_up_pressed:
+            self.max_linear_x = min(1.0, self.max_linear_x + 0.05)
+            self.get_logger().info(f"🚀 前進速度加速！目前最大車速: {self.max_linear_x:.2f} m/s")
+        elif dpad_down_pressed:
+            self.max_linear_x = max(0.05, self.max_linear_x - 0.05)
+            self.get_logger().info(f"📉 前進速度減速。目前最大車速: {self.max_linear_x:.2f} m/s")
+
+        # 調整自轉速度限制 max_angular_z (步長 0.05, 範圍 0.05 ~ 2.0)
+        if dpad_left_pressed:
+            self.max_angular_z = min(2.0, self.max_angular_z + 0.05)
+            self.get_logger().info(f"🔄 自轉速度加速！目前最大角速度: {self.max_angular_z:.2f} rad/s")
+        elif dpad_right_pressed:
+            self.max_angular_z = max(0.05, self.max_angular_z - 0.05)
+            self.get_logger().info(f"↩️ 自轉速度減速。目前最大角速度: {self.max_angular_z:.2f} rad/s")
 
         left_y = self.apply_deadzone(msg.axes[1]) if len(msg.axes) > 1 else 0.0
         right_x = self.apply_deadzone(msg.axes[0]) if len(msg.axes) > 0 else 0.0
@@ -241,6 +284,7 @@ class JoyBaseCameraGripper(Node):
         if has_arm_input:
             if now - self.last_arm_cmd_time < 0.040:  # 提升至 25Hz (40ms) 發送頻率，達到真實即時控制
                 self.last_buttons = list(msg.buttons)
+                self.last_axes = list(msg.axes)
                 return
             self.last_arm_cmd_time = now
 
@@ -276,6 +320,7 @@ class JoyBaseCameraGripper(Node):
             self.arm.move_horizontal(-right_y_stick * 0.040)
 
         self.last_buttons = list(msg.buttons)
+        self.last_axes = list(msg.axes)
 
     # =========================
     # Base command

@@ -49,7 +49,7 @@ class ImuA9DataNode(Node):
             msg.header.stamp = self.get_clock().now().to_msg()
             msg.header.frame_id = 'imu_link'
 
-            # 1. 姿態 (Orientation)
+            # 1. 姿態 (Orientation) - 還原標準 RPY 順序，配合 xacro 中新加入的 imu_link TF
             msg.orientation = euler_to_quaternion(a9.angle_degree[0], a9.angle_degree[1], a9.angle_degree[2])
             
             # 2. 角速度 (Angular Velocity) - Rad/s
