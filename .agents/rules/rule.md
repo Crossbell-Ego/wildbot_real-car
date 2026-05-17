@@ -326,5 +326,14 @@ graph TD
 4.  **IMU 特殊路徑**:
     - IMU 驅動位於獨立的工作空間，因此其 source 路徑為 `/workspaces/workspaces/imu_ws/install/setup.bash`。
 
+### **溫度監控與過熱保護 (Thermal Protection)**
+
+- **監控對象**: `/arm_joint_temperatures` (包含大臂、小臂、夾爪)。
+- **保護行為**:
+    - **警告 (Warning)**: 當任一馬達溫度 $\ge 65^\circ\text{C}$ 時，應於終端機發出警告。
+    - **強制停機 (Critical/E-Stop)**: 當任一馬達溫度 $\ge 70^\circ\text{C}$ 時，**必須** 立即停止發送移動指令（Software E-Stop），攔截所有動作以防止馬達燒毀。
+    - **自動恢復**: 溫度降回 $60^\circ\text{C}$ 以下才可解除鎖定。
+
 # 注意事項
 1. 必要時參考.agents/reference內的資料
+2. 容器內的依賴庫要能夠可以不用重複安裝

@@ -30,35 +30,37 @@ services:
       bash -c "source /opt/ros/jazzy/setup.bash &&
                 ros2 launch kros_car bringup.launch.py"
 
-  joy_driver:
-    image: wildbot_workspace:latest
-    privileged: true
-    env_file:
-      - .env
-    devices:
-      - "/dev/input:/dev/input"
-    networks:
-      - my_bridge_network
-    command: >
-      bash -lc "source /opt/ros/jazzy/setup.bash &&
-                ros2 run joy joy_node --ros-args -p autorepeat_rate:=20.0"
+  # [已移至 kros_car 容器內執行，避免跨容器 DDS 通訊問題]
+  # 使用方式：docker exec -it compose-kros_car-1 bash -> ./teleop.sh
+  # joy_driver:
+  #   image: wildbot_workspace:latest
+  #   privileged: true
+  #   env_file:
+  #     - .env
+  #   devices:
+  #     - "/dev/input:/dev/input"
+  #   networks:
+  #     - my_bridge_network
+  #   command: >
+  #     bash -lc "source /opt/ros/jazzy/setup.bash &&
+  #               ros2 run joy joy_node --ros-args -p autorepeat_rate:=20.0"
 
-  teleop_script:
-    image: wildbot_workspace:latest
-    volumes:
-      - /home/robot/wildbot_real car/wildbot_workspace-main:/workspaces
-    env_file:
-      - .env
-    networks:
-      - my_bridge_network
-    depends_on:
-      - kros_car
-    environment:
-      - PYTHONUNBUFFERED=1
-      - HSA_OVERRIDE_GFX_VERSION=11.0.0
-    command: >
-      bash -lc "source /opt/ros/jazzy/setup.bash &&
-                python3 /workspaces/joy_to_base_camera.py"
+  # teleop_script:
+  #   image: wildbot_workspace:latest
+  #   volumes:
+  #     - /home/robot/wildbot_real car/wildbot_workspace-main:/workspaces
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     - my_bridge_network
+  #   depends_on:
+  #     - kros_car
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #     - HSA_OVERRIDE_GFX_VERSION=11.0.0
+  #   command: >
+  #     bash -lc "source /opt/ros/jazzy/setup.bash &&
+  #               python3 /workspaces/joy_to_base_camera.py"
 
   imu_driver:
     image: wildbot_workspace:latest

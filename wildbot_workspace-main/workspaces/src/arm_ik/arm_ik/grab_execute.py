@@ -34,16 +34,18 @@ class GrabExecutor(Node):
         
         # 同步內部目標值並發送
         self.arm.target_positions = list(target)
-        self.arm.send_goal(target, duration=duration)
+        self.arm.send_goal(target, duration=duration, teleop_mode=False)
         
-        # 簡單等待動作執行時間
-        time.sleep(duration + 0.5)
+        # 改用非阻塞的 spin 循環等待移動完成，確保 JointState 在這期間能實時更新
+        start_wait = time.time()
+        while time.time() - start_wait < (duration + 0.5):
+            rclpy.spin_once(self, timeout_sec=0.05)
         
         # 計算抵達後的實時座標
         q = self.arm.current_positions
-        x_m, z_m = self.arm.get_coordinates(q[0], q[1])
+        x_m, z_m = self.arm.get_joint2_coordinates(q[0])
         
-        self.get_logger().info(f"✅ 抵達點位 [{slot_name}] (X: {x_m*100:.1f} cm, Z: {z_m*100:.1f} cm)")
+        self.get_logger().info(f"✅ 抵達點位 [{slot_name}] (第二軸 X: {x_m*100:.1f} cm, Z(離地): {z_m*100:.1f} cm)")
         return True
 
 def main():

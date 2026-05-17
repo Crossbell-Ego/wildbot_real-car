@@ -57,10 +57,10 @@ class GrabTeach(Node):
                 json.dump(self.saved_poses, f, indent=4)
             
             q_deg = [math.degrees(x) for x in pos]
-            x_m, z_m = self.arm.get_coordinates(pos[0], pos[1])
+            x_m, z_m = self.arm.get_joint2_coordinates(pos[0])
             
             print(f"\n✅ [已紀錄點位 {slot}]")
-            print(f"   座標 (base_link): X: {x_m*100:.1f} cm, Z: {z_m*100:.1f} cm")
+            print(f"   第二軸旋轉中心坐標: X: {x_m*100:.1f} cm, Z(離地): {z_m*100:.1f} cm")
             print(f"   角度 (Deg): Q1={q_deg[0]:.1f}, Q2={q_deg[1]:.1f}, Grip={q_deg[2]:.1f}")
             print(f"   弧度 (Rad): {pos}")
             print(f"💾 檔案已更新: {self.pose_file}")
@@ -79,15 +79,20 @@ class GrabTeach(Node):
         
         # 強制同步一次目標值，避免計算 delta 時出錯
         self.arm.target_positions = list(target)
-        self.arm.send_goal(target, duration=1.5)
+        self.arm.send_goal(target, duration=1.5, teleop_mode=False)
 
     def print_status(self):
         if not self.arm.initialized:
             print("⏳ 正在等待 JointState 訊號...")
             return
         q = self.arm.current_positions
-        x_m, z_m = self.arm.get_coordinates(q[0], q[1])
-        print(f"📍 [實時座標] X: {x_m*100:.1f} cm, Z: {z_m*100:.1f} cm")
+        t = self.arm.temperatures
+        x_m, z_m = self.arm.get_joint2_coordinates(q[0])
+        
+        status_line = "🔥 [過熱鎖定]" if self.arm.overheated else "✅ [狀態正常]"
+        print(f"\n{status_line}")
+        print(f"📍 [第二軸旋轉中心實時座標] X: {x_m*100:.1f} cm, Z(離地): {z_m*100:.1f} cm")
+        print(f"🌡️  [馬達溫度] Q1: {t[0]:.1f}°C, Q2: {t[1]:.1f}°C, Grip: {t[2]:.1f}°C")
         print(f"⚙️  [實時角度] Q1: {math.degrees(q[0]):.1f}°, Q2: {math.degrees(q[1]):.1f}°, Grip: {math.degrees(q[2]):.1f}°")
 
 def main():

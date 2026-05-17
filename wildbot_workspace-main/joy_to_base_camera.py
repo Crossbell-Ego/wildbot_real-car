@@ -1,18 +1,11 @@
 #!/usr/bin/env python3
 
-import os
-import time
-from datetime import datetime
-
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
 
-from sensor_msgs.msg import Joy, Image
+from sensor_msgs.msg import Joy
 from geometry_msgs.msg import TwistStamped
-
-from cv_bridge import CvBridge
-import cv2
 
 from control_msgs.action import FollowJointTrajectory
 from trajectory_msgs.msg import JointTrajectoryPoint
@@ -29,7 +22,6 @@ class JoyBaseCameraGripper(Node):
         # =========================
         self.cmd_vel_topic = '/base_controller/cmd_vel'
         self.joy_topic = '/joy'
-        self.image_topic = '/camera/color/image_raw'
 
         # =========================
         # Speed settings
@@ -52,11 +44,7 @@ class JoyBaseCameraGripper(Node):
         self.gripper_half_rad = 3       # 180度，保守夾取
         self.gripper_close_rad = 2.93      # 168度，接近閉合極限，不建議更小
 
-        # =========================
-        # Photo save folder
-        # =========================
-        self.save_dir = '/workspaces/photos'
-        os.makedirs(self.save_dir, exist_ok=True)
+
 
         # =========================
         # ROS publishers/subscribers
@@ -81,27 +69,13 @@ class JoyBaseCameraGripper(Node):
             joy_qos
         )
 
-        self.image_sub = self.create_subscription(
-            Image,
-            self.image_topic,
-            self.image_callback,
-            10
-        )
 
-        # 新增：監聽關節狀態，用來解鎖安全鎖
-        self.joint_state_sub = self.create_subscription(
-            JointState,
-            '/joint_states',
-            self.joint_state_callback,
-            10
-        )
 
         # 初始化通用手臂接口
         self.arm = ArmInterface(self)
         
-        self.latest_image = None
-        self.last_photo_time = 0.0
-        self.photo_cooldown = 0.8
+        self.last_buttons = None
+        self.axes_neutralized = False  # 💡 安全防護：啟動時必須等待所有搖桿回到中位，才開始控制手臂，避免暴衝！
 
         # 目前底盤速度命令，base_controller 吃 TwistStamped
         self.current_twist = TwistStamped()
@@ -112,7 +86,7 @@ class JoyBaseCameraGripper(Node):
         self.timer = self.create_timer(0.02, self.publish_cmd_vel)
 
         self.get_logger().info('Checking arm_controller action server...')
-        if not self.arm_client.wait_for_server(timeout_sec=20.0):
+        if not self.arm.arm_client.wait_for_server(timeout_sec=20.0):
             self.get_logger().error('Arm controller action server NOT found! Arm/Gripper functions will be disabled.')
         else:
             self.get_logger().info('Arm controller action server connected.')
@@ -121,7 +95,7 @@ class JoyBaseCameraGripper(Node):
         self.get_logger().info('Base cmd topic: /base_controller/cmd_vel')
         self.get_logger().info('Base cmd type: geometry_msgs/msg/TwistStamped')
         self.get_logger().info('Control mode: axes[1]->linear.x, axes[3]->angular.z')
-        self.get_logger().info(f'Photos will be saved to: {self.save_dir}')
+
 
     # =========================
     # Utility
@@ -156,46 +130,7 @@ class JoyBaseCameraGripper(Node):
         self.current_twist = self.make_stop_twist()
         self.cmd_pub.publish(self.current_twist)
 
-    # =========================
-    # Camera
-    # =========================
-    def image_callback(self, msg):
-        try:
-            self.latest_image = self.bridge.imgmsg_to_cv2(
-                msg,
-                desired_encoding='bgr8'
-            )
-        except Exception as e:
-            self.get_logger().error(f'Image conversion failed: {e}')
 
-    def take_picture(self):
-        now = time.time()
-
-        if now - self.last_photo_time < self.photo_cooldown:
-            return
-
-        self.last_photo_time = now
-
-        if self.latest_image is None:
-            self.get_logger().warn('No image received yet.')
-            return
-
-        os.makedirs(self.save_dir, exist_ok=True)
-
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f'photo_{timestamp}.jpg'
-        filepath = os.path.join(self.save_dir, filename)
-
-        try:
-            ok = cv2.imwrite(filepath, self.latest_image)
-
-            if ok and os.path.exists(filepath):
-                self.get_logger().info(f'Photo saved: {filepath}')
-            else:
-                self.get_logger().error(f'cv2.imwrite failed, file not created: {filepath}')
-
-        except Exception as e:
-            self.get_logger().error(f'Failed to save photo: {e}')
 
     def gripper_open(self):
         self.get_logger().info('Gripper open.')
@@ -273,37 +208,58 @@ class JoyBaseCameraGripper(Node):
             if b == 1:
                 self.get_logger().warn(f"BUTTON PRESSED: {i}")
 
+        # 限制手臂控制指令發送頻率 (避免高頻手把事件瘋狂搶佔 Action 導致抖動與卡頓)
+        now = self.get_clock().now().nanoseconds / 1e9
+        if not hasattr(self, 'last_arm_cmd_time'):
+            self.last_arm_cmd_time = 0.0
+
+        # 依據 verified 對應表：右搖桿上下 (Vertical) 固定為 msg.axes[3]
+        right_y_stick = self.apply_deadzone(msg.axes[3]) if len(msg.axes) > 3 else 0.0
+
+        # 💡 安全中位判定：如果右搖桿上下尚未歸零，必須在手把首次回到中位後才允許控制，避免暴衝！
+        if not self.axes_neutralized:
+            if abs(right_y_stick) < 0.01:
+                self.axes_neutralized = True
+                self.get_logger().info("✅ 手把右搖桿已成功歸零/中位校準，解除手臂安全鎖。")
+            else:
+                # 尚未中位，強制設為 0.0 避免暴衝
+                right_y_stick = 0.0
+
+        has_arm_input = False
+        if len(msg.buttons) > 4 and msg.buttons[4] == 1: has_arm_input = True
+        if len(msg.buttons) > 0 and msg.buttons[0] == 1: has_arm_input = True
+        if (len(msg.buttons) > 2 and msg.buttons[2] == 1) or (len(msg.buttons) > 3 and msg.buttons[3] == 1): has_arm_input = True
+        if len(msg.buttons) > 1 and msg.buttons[1] == 1: has_arm_input = True
+        if abs(right_y_stick) > 0.05: has_arm_input = True
+
+        if has_arm_input:
+            if now - self.last_arm_cmd_time < 0.040:  # 提升至 25Hz (40ms) 發送頻率，達到真實即時控制
+                self.last_buttons = list(msg.buttons)
+                return
+            self.last_arm_cmd_time = now
+
         # Y (按鈕 4): 控制 joint 1 往上
         if len(msg.buttons) > 4 and msg.buttons[4] == 1:
-            self.arm.move_arm_1(-0.01)
+            self.arm.move_arm_1(-0.040)
 
         # A (按鈕 0): 控制 joint 1 往下
         if len(msg.buttons) > 0 and msg.buttons[0] == 1:
-            self.arm.move_arm_1(0.01)
+            self.arm.move_arm_1(0.040)
 
         # X (按鈕 2 或 3): 控制 joint 2 往上
         if (len(msg.buttons) > 2 and msg.buttons[2] == 1) or (len(msg.buttons) > 3 and msg.buttons[3] == 1):
-            self.arm.move_arm_2(-0.01)
-            if self.button_pressed(msg, 2) or self.button_pressed(msg, 3):
-                self.take_picture()
+            self.arm.move_arm_2(-0.040)
 
         # B (按鈕 1): 控制 joint 2 往下
         if len(msg.buttons) > 1 and msg.buttons[1] == 1:
-            self.arm.move_arm_2(0.01)
+            self.arm.move_arm_2(0.040)
 
-        # L2 (按鈕 8)：按住持續打開
-        if len(msg.buttons) > 8 and msg.buttons[8] == 1:
-            self.arm.move_gripper(0.02)  # 調降速度
 
-        # R2 (按鈕 9)：按住持續閉合
-        if len(msg.buttons) > 9 and msg.buttons[9] == 1:
-            self.arm.move_gripper(-0.02) # 調降速度
-
-        # 右搖桿左右 (Index 2): 水平連動控制 (保持第二軸與地面水平)
-        right_x_stick = self.apply_deadzone(msg.axes[2]) if len(msg.axes) > 2 else 0.0
-        if abs(right_x_stick) > 0.05:
-            # 向右推 (1.0) 時 delta 為負，大臂往上 (arm_1 減少)，小臂自動反向補償 -> 伸長
-            self.arm.move_horizontal(-right_x_stick * 0.01)
+        # 右搖桿左右：無功能
+        # 右搖桿上下：水平連動控制 (保持第二軸/小臂與地面水平)
+        if abs(right_y_stick) > 0.05:
+            # 向上推 (1.0) 時為負，大臂往上 (arm_1 減少)，小臂自動反向補償 -> 保持水平伸長 (Extend)
+            self.arm.move_horizontal(-right_y_stick * 0.040)
 
         self.last_buttons = list(msg.buttons)
 
@@ -335,20 +291,29 @@ def main(args=None):
 
     try:
         rclpy.spin(node)
-
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SystemExit):
         pass
-
+    except Exception:
+        pass
     finally:
-        # 關閉程式時停止底盤
-        stop_msg = TwistStamped()
-        stop_msg.header.frame_id = 'base_link'
-        stop_msg.header.stamp = node.get_clock().now().to_msg()
+        # 關閉程式時停止底盤 (防護：避免 context 已失效時發布報錯)
+        try:
+            stop_msg = TwistStamped()
+            stop_msg.header.frame_id = 'base_link'
+            stop_msg.header.stamp = node.get_clock().now().to_msg()
+            node.cmd_pub.publish(stop_msg)
+        except Exception:
+            pass
 
-        node.cmd_pub.publish(stop_msg)
+        try:
+            node.destroy_node()
+        except Exception:
+            pass
 
-        node.destroy_node()
-        rclpy.shutdown()
+        try:
+            rclpy.shutdown()
+        except Exception:
+            pass
 
 
 if __name__ == '__main__':
