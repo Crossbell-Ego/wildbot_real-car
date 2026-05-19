@@ -7,17 +7,25 @@ services:
       - "/dev/bus/usb:/dev/bus/usb"
     networks:
       - my_bridge_network
+    volumes:
+      - ./launch/gemini_ew.launch.py:/robot_ws/src/OrbbecSDK_ROS2/orbbec_camera/launch/gemini_ew.launch.py
+      - ./launch/gemini_ew.launch.py:/robot_ws/install/orbbec_camera/share/orbbec_camera/launch/gemini_ew.launch.py
     command:
-    - ros2
-    - launch
-    - orbbec_camera
-    - gemini_ew.launch.py    
-    - color_width:=1280
-    - color_height:=720
-    - color_fps:=30
-    - depth_width:=1280
-    - depth_height:=800
-    - depth_fps:=30
+      - ros2
+      - launch
+      - orbbec_camera
+      - gemini_ew.launch.py
+      - color_width:=1280
+      - color_height:=720
+      - color_fps:=30
+      - depth_width:=1280
+      - depth_height:=800
+      - depth_fps:=30
+      - enable_color_auto_exposure:=false
+      - color_exposure:=300
+      - color_gain:=16
+      - color_rotation:=180
+      - depth_rotation:=180
 
   compress:
     image: ghcr.io/screamlab/wildbot_base_image:latest

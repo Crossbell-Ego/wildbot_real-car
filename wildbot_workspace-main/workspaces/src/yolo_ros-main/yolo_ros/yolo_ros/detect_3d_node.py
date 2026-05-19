@@ -320,6 +320,13 @@ class Detect3DNode(LifecycleNode):
                 bbox3d.frame_id = self.target_frame
                 new_detections[-1].bbox3d = bbox3d
 
+                # 建立 3D BB 並在終端機印出轉換為 base_link 之後的座標 (包含信心度)
+                self.get_logger().info(
+                    f"\033[92m[YOLO-3D Target] 偵測到 '{detection.class_name}' (信心度: {detection.score:.2f}) -> "
+                    f"轉換後座標 ({self.target_frame}): "
+                    f"X={bbox3d.center.position.x:.3f}m, Y={bbox3d.center.position.y:.3f}m, Z={bbox3d.center.position.z:.3f}m\033[0m"
+                )
+
         return new_detections
 
     @staticmethod
@@ -681,11 +688,7 @@ class Detect3DNode(LifecycleNode):
         w = float(x_max - x_min)
         h = float(y_max - y_min)
 
-        # 建立 3D BB 並在終端機印出資訊 (包含信心度)
-        self.get_logger().info(
-            f"\033[92m[YOLO-3D] 偵測到 '{detection.class_name}' (信心度: {detection.score:.2f}): "
-            f"X={x:.2f}m, Y={y:.2f}m, Z={z:.2f}m\033[0m"
-        )
+        # (已將日誌移至 process_detections，印出轉換為 base_link 後的座標)
 
         msg = BoundingBox3D()
         msg.center.position.x = x
@@ -1262,18 +1265,13 @@ class Detect3DNode(LifecycleNode):
         translation = None
 
         try:
-            # 🚨 嘗試轉換到 map 座標系，這樣標籤就會固定在世界中，就算車子移動也不會導致相對距離被鎖死
-            actual_target_frame = 'map'
-            if not self.tf_buffer.can_transform(actual_target_frame, frame_id, rclpy.time.Time()):
-                actual_target_frame = 'odom'
-                if not self.tf_buffer.can_transform(actual_target_frame, frame_id, rclpy.time.Time()):
-                    actual_target_frame = self.target_frame
+            # 強制使用配置的 target_frame (通常為 base_link)，不進行 map/odom 的強行覆寫
+            # 這樣能確保 3D YOLO 輸出的座標是相對於底盤，適用於手臂精準抓取，且高度 Z 軸相對於地面為正值
+            actual_target_frame = self.target_frame
 
             transform: TransformStamped = self.tf_buffer.lookup_transform(
                 actual_target_frame, frame_id, rclpy.time.Time()
             )
-            # 強制將目前的 target_frame 設為轉換成功的 frame，這樣 marker 就會發布在 map 座標系
-            self.target_frame = actual_target_frame
 
             translation = np.array(
                 [

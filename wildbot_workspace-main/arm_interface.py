@@ -2,7 +2,7 @@ import rclpy
 from rclpy.action import ActionClient
 from rclpy.qos import QoSProfile, qos_profile_sensor_data
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float64MultiArray
 from control_msgs.action import FollowJointTrajectory
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 import math
@@ -35,6 +35,7 @@ class ArmInterface:
         self.L2 = 0.11       # 第二臂長 (已更新)
         self.BASE_X = 0.165  # 手臂底座 X 偏移
         self.BASE_Z = 0.120  # 手臂底座高度 (補回原先漏掉的定義)
+        self.BUMPER_X = 0.13063  # 前擋板 X 座標 (實體皮尺對位校準，從 14.363 cm 修正為 13.063 cm，消除 1.3 cm 偏差)
 
         # 使用感測器專用 QoS，提高相容性 (Best Effort)
         self.subscription = self.node.create_subscription(
@@ -45,7 +46,7 @@ class ArmInterface:
 
         # 訂閱馬達溫度，進行過熱停機保護
         self.temp_sub = self.node.create_subscription(
-            Float32MultiArray,
+            Float64MultiArray,
             '/arm_joint_temperatures',
             self.temperature_callback,
             qos_profile_sensor_data)
@@ -63,7 +64,7 @@ class ArmInterface:
 
     def get_coordinates(self, q1, q2):
         """
-        計算夾爪（抓取點）在 base_link 座標系下的實時位置 (X, Z)（包含實體皮尺對位校準）。
+        計算夾爪（抓取點）相對於前擋板（Bumper）的實時位置 (X, Z)（包含實體皮尺對位校準）。
         當小臂水平時，其 Z 軸高度將與第二軸中心完全一致。
         """
         theta1 = 2.0 - q1
@@ -73,13 +74,14 @@ class ArmInterface:
         
         base_z_ground = 0.1266
         
-        x = self.BASE_X + self.L1 * math.cos(theta1) + self.L2 * math.cos(theta2)
+        x_base = self.BASE_X + self.L1 * math.cos(theta1) + self.L2 * math.cos(theta2)
+        x = x_base - self.BUMPER_X  # 計算相對於前擋板的距離
         z = base_z_ground + self.L1 * math.sin(theta1) + self.L2 * math.sin(theta2)
         return x, z
 
     def get_joint2_coordinates(self, q1):
         """
-        計算第二軸 (arm_2_joint) 在 base_link 座標系下的位置 (X, Z)（包含實體皮尺對位校準）。
+        計算第二軸 (arm_2_joint) 相對於前擋板（Bumper）的位置 (X, Z)（包含實體皮尺對位校準）。
         """
         # 實體皮尺對位校準映射關係
         theta1 = 2.0 - q1
@@ -87,7 +89,8 @@ class ArmInterface:
         # 第一軸旋轉中心實際離地高度為 12.66 cm (0.1266 m)
         base_z_ground = 0.1266
         
-        x = self.BASE_X + self.L1 * math.cos(theta1)
+        x_base = self.BASE_X + self.L1 * math.cos(theta1)
+        x = x_base - self.BUMPER_X  # 計算相對於前擋板的距離
         z = base_z_ground + self.L1 * math.sin(theta1)
         return x, z
 

@@ -4,6 +4,9 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <robot name="kros_car">
+  <material name="silver">
+    <color rgba="0.7 0.7 0.7 1.0"/>
+  </material>
   <link name="base_footprint"/>
   <joint name="base_footprint_to_base_link" type="fixed">
     <parent link="base_footprint"/>
@@ -575,10 +578,11 @@
     <axis xyz="0.0 -1.0 -0.0"/>
   </joint>
   <joint name="arm_1_joint" type="continuous">
-    <origin rpy="3.14159265 1.04719755 -3.14159265" xyz="-0.007312 -0.01975 0.027605"/>
+    <origin rpy="3.14159265 1.04719755 0.0" xyz="-0.007312 -0.01975 0.027605"/>
     <parent link="new_motor_v2_1"/>
     <child link="big_U_self_v2_1"/>
-    <axis xyz="0.0 -1.0 0.0"/>
+    <axis xyz="0.0 1.0 0.0"/>
+    <limit effort="10.0" velocity="6.28"/>
   </joint>
   <joint name="Rigid 42" type="fixed">
     <origin rpy="0 0 0" xyz="-0.04 0.0 -1.5e-05"/>
@@ -595,6 +599,7 @@
     <parent link="new_motor_v2__1__1"/>
     <child link="big_U_self_v2__1__1"/>
     <axis xyz="0.0 -1.0 -0.0"/>
+    <limit effort="10.0" velocity="6.28"/>
   </joint>
   <joint name="Rigid 45" type="fixed">
     <origin rpy="0 0 0" xyz="-1.5e-05 0.0 0.04"/>
@@ -606,12 +611,14 @@
     <parent link="grap_base_v1_1"/>
     <child link="grap2_v2_1"/>
     <axis xyz="-1.0 -0.0 -0.00037"/>
+    <limit effort="10.0" velocity="6.28"/>
   </joint>
   <joint name="gripper_joint_2" type="continuous">
     <origin rpy="-2.87979321 -0.00072739252 -9.57630656e-05" xyz="-1.3e-05 -0.0125 0.0355"/>
     <parent link="grap_base_v1_1"/>
     <child link="grap2_v2_Mirror__1"/>
     <axis xyz="1.0 0.0 0.00037"/>
+    <limit effort="10.0" velocity="6.28"/>
   </joint>
   <ros2_control name="kros_car_system" type="system">
     <hardware>
@@ -703,6 +710,6 @@
   <joint name="camera_joint" type="fixed">
     <parent link="base_link"/>
     <child link="camera_link"/>
-    <origin rpy="0 -0.523 0" xyz="0.135 0 0.265"/>
+    <origin rpy="0 0.523 0" xyz="0.115862 0 0.186"/>
   </joint>
 </robot>

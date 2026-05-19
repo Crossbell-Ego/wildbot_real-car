@@ -47,8 +47,8 @@ class GrabExecutor(Node):
         x_g, z_g = self.arm.get_coordinates(q[0], q[1])
         
         self.get_logger().info(
-            f"✅ 抵達點位 [{slot_name}] (第二軸 X: {x_m*100:.1f} cm, Z(離地): {z_m*100:.1f} cm | "
-            f"夾爪 X: {x_g*100:.1f} cm, Z(離地): {z_g*100:.1f} cm)"
+            f"✅ 抵達點位 [{slot_name}] (第二軸 X(距前擋板): {x_m*100:.1f} cm, Z(離地): {z_m*100:.1f} cm | "
+            f"夾爪 X(距前擋板): {x_g*100:.1f} cm, Z(離地): {z_g*100:.1f} cm)"
         )
         return True
 
