@@ -22,9 +22,17 @@ class GrabExecutor(Node):
         self.saved_poses = self.load_poses()
         
         self.last_print_time = 0.0  # 用於限制終端機列印頻率
-        self.state = 'IDLE'  # 可為: IDLE, WAIT_YOLO, ALIGNING, DONE
+        self.state = 'IDLE'  # 可為: IDLE, WAIT_YOLO, ROTATING, ALIGNING, DONE
         self.factor = 1.0    # 打滑補償係數 (例如在草地上設為 1.2)
-        self.distance_offset = -0.02  # 距離補償值 (公尺)，負值代表少走 (例如 -0.02 代表少走 2 公分)，可用於修正移動過頭的問題
+        self.distance_offset = -0.05  # 距離補償值 (公尺)，負值代表少走 (例如 -0.02 代表少走 2 公分)，可用於修正移動過頭的問題
+        
+        # YOLO 目標物對齊與旋轉相關變數
+        self.target_class_name = None
+        self.latest_target_y = 0.0
+        self.latest_target_x = 0.0
+        self.target_y_threshold = 0.02  # 左右對齊閾值 (公尺)，當 |y| 小於此值時視為對齊中心
+        self.rotation_speed = 0.15       # 原地旋轉對齊的速度 (rad/s)
+        self.align_kp = 2.5              # 走直線時的左右校正比例係數 (P controller)
         
         # 底盤控制狀態變數
         self.target_chassis_dist = 0.0
@@ -84,15 +92,28 @@ class GrabExecutor(Node):
         if not msg.detections:
             return
             
-        # 若非處於等待偵測狀態，僅維持實時顯示資訊
+        # 若移至第二點位或已完成，直接返回，避免頻繁的終端機列印與排版阻塞或洗板
+        if self.state in ['MOVING_TO_SLOT_2', 'DONE']:
+            return
+
+        # 1. 旋轉對齊模式 (ROTATING) 與前後移動對齊模式 (ALIGNING)：持續更新鎖定目標物的實時座標
+        if self.state in ['ROTATING', 'ALIGNING']:
+            target_det = None
+            for det in msg.detections:
+                if det.class_name == self.target_class_name and det.score >= 0.5:
+                    target_det = det
+                    break
+            if target_det is not None:
+                self.latest_target_y = target_det.bbox3d.center.position.y
+                self.latest_target_x = target_det.bbox3d.center.position.x
+            return
+
+        # 2. 若非處於等待偵測狀態，僅維持實時顯示資訊
         if self.state != 'WAIT_YOLO':
-            # 💡 效能優化：若正在對齊、移至第二點位或已完成，直接返回，避免頻繁的終端機列印與排版阻塞或洗板
-            if self.state in ['ALIGNING', 'MOVING_TO_SLOT_2', 'DONE']:
-                return
             self.print_detection_status(msg)
             return
 
-        # 尋找第一個信心度 >= 0.7 的目標物
+        # 3. 等待目標物模式 (WAIT_YOLO)：尋找第一個信心度 >= 0.7 的目標物
         target_det = None
         for det in msg.detections:
             if det.score >= 0.7:
@@ -102,29 +123,34 @@ class GrabExecutor(Node):
         if target_det is None:
             return
 
-        # 進入對齊與底盤移動狀態
-        self.state = 'ALIGNING'
+        # 鎖定目標物資訊
+        self.target_class_name = target_det.class_name
+        self.latest_target_y = target_det.bbox3d.center.position.y
+        self.latest_target_x = target_det.bbox3d.center.position.x
+
+        self.get_logger().info("=" * 60)
+        self.get_logger().info(f"🎯 鎖定 YOLO 目標物: {self.target_class_name} (信心度: {target_det.score:.2f})")
         
-        # 1. 計算物體相對於前擋板之距離 (m)
-        x_raw = target_det.bbox3d.center.position.x
-        bumper_x = self.arm.BUMPER_X if hasattr(self.arm, 'BUMPER_X') else 0.13063
-        x_to_bumper = x_raw - bumper_x + 0.07
+        # 判斷是否偏離相機中心 (Y 軸偏移大於閾值)
+        if abs(self.latest_target_y) > self.target_y_threshold:
+            self.state = 'ROTATING'
+            self.get_logger().info(f"🔄 目標偏離中心 Y: {self.latest_target_y*100:.2f} cm，啟動原地旋轉對齊模式...")
+            self.get_logger().info("=" * 60)
+        else:
+            # 偏差在閾值內，直接進入前後移動對齊狀態
+            self.state = 'ALIGNING'
+            bumper_x = self.arm.BUMPER_X if hasattr(self.arm, 'BUMPER_X') else 0.13063
+            x_to_bumper = self.latest_target_x - bumper_x + 0.07
+            q = self.arm.current_positions
+            x_g, z_g = self.arm.get_coordinates(q[0], q[1])
+            diff = x_to_bumper - x_g
 
-        # 2. 計算夾爪抓取點相對於前擋板之距離 (m)
-        q = self.arm.current_positions
-        x_g, z_g = self.arm.get_coordinates(q[0], q[1])
+            self.get_logger().info(f"📊 物體距前擋板: {x_to_bumper*100:.2f} cm | 夾爪距前擋板: {x_g*100:.2f} cm")
+            self.get_logger().info(f"↔️ 計算 X 軸差距 (前進距離): {diff*100:.2f} cm")
+            self.get_logger().info("=" * 60)
 
-        # 3. 計算差距距離 (m)
-        diff = x_to_bumper - x_g
-
-        self.get_logger().info("=" * 60)
-        self.get_logger().info(f"🎯 鎖定 YOLO 目標物: {target_det.class_name} (信心度: {target_det.score:.2f})")
-        self.get_logger().info(f"📊 物體距前擋板: {x_to_bumper*100:.2f} cm | 夾爪距前擋板: {x_g*100:.2f} cm")
-        self.get_logger().info(f"↔️ 計算 X 軸差距 (前進距離): {diff*100:.2f} cm")
-        self.get_logger().info("=" * 60)
-
-        # 4. 初始化底盤移動設定
-        self.start_chassis_move(diff)
+            # 初始化底盤移動設定
+            self.start_chassis_move(diff)
 
     def start_chassis_move(self, distance):
         """根據計算出的差距，啟動底盤移動"""
@@ -133,8 +159,9 @@ class GrabExecutor(Node):
         if self.target_chassis_dist < 0.0:
             self.target_chassis_dist = 0.0
             
-        # 根據正負判斷前進 (0.05) 抑或後退 (-0.05)
-        self.chassis_speed = 0.05 if distance >= 0 else -0.05
+        # 根據正負判斷前進與後退，使用 self.chassis_speed 設定的值
+        speed_val = abs(self.chassis_speed)
+        self.chassis_speed = speed_val if distance >= 0 else -speed_val
         
         self.chassis_start_x = None
         self.chassis_start_y = None
@@ -158,6 +185,37 @@ class GrabExecutor(Node):
 
     def chassis_control_loop(self):
         """底盤運動控制迴圈 (20Hz)"""
+        # 1. 旋轉對齊邏輯
+        if self.state == 'ROTATING':
+            if abs(self.latest_target_y) <= self.target_y_threshold:
+                # 旋轉對齊完成，停下小車並進入前後對齊階段
+                self.stop_chassis()
+                self.get_logger().info(f"🔄 左右旋轉對齊完成！當前偏差 Y: {self.latest_target_y*100:.2f} cm，切換為前後移動對齊...")
+                
+                # 計算前後對齊差距
+                self.state = 'ALIGNING'
+                bumper_x = self.arm.BUMPER_X if hasattr(self.arm, 'BUMPER_X') else 0.13063
+                x_to_bumper = self.latest_target_x - bumper_x + 0.07
+                q = self.arm.current_positions
+                x_g, z_g = self.arm.get_coordinates(q[0], q[1])
+                diff = x_to_bumper - x_g
+                
+                self.start_chassis_move(diff)
+            else:
+                # 繼續原地旋轉
+                msg = TwistStamped()
+                msg.header.stamp = self.get_clock().now().to_msg()
+                msg.header.frame_id = 'base_link'
+                msg.twist.linear.x = 0.0
+                # 如果 y > 0 (偏左)，小車應逆時針轉 (angular.z > 0)；如果 y < 0 (偏右)，小車應順時針轉 (angular.z < 0)
+                msg.twist.angular.z = self.rotation_speed if self.latest_target_y > 0 else -self.rotation_speed
+                self.cmd_pub.publish(msg)
+                self.get_logger().info(
+                    f"🔄 旋轉對齊中... 目前偏差 Y: {self.latest_target_y*100:.2f} cm",
+                    throttle_duration_sec=0.5
+                )
+            return
+
         if self.state != 'ALIGNING' or self.chassis_start_x is None:
             return
 
@@ -180,10 +238,19 @@ class GrabExecutor(Node):
         else:
             # 繼續移動
             msg.twist.linear.x = self.chassis_speed
-            msg.twist.angular.z = 0.0
+            
+            # 實時左右偏差校正 (走直線時的微調)
+            # 設定一個較小的死區 (0.005m = 0.5 cm) 讓直線修正更靈敏
+            if abs(self.latest_target_y) > 0.005:
+                # 使用比例控制 (P-controller) 進行平滑轉向修正，限制最大校正角速度為 self.rotation_speed
+                raw_yaw_cmd = self.align_kp * self.latest_target_y
+                msg.twist.angular.z = max(-self.rotation_speed, min(self.rotation_speed, raw_yaw_cmd))
+            else:
+                msg.twist.angular.z = 0.0
+                
             self.cmd_pub.publish(msg)
             self.get_logger().info(
-                f"📡 發送底盤速度: vx={self.chassis_speed:.3f} m/s",
+                f"📡 前進對齊中: vx={self.chassis_speed:.3f} m/s, wz={msg.twist.angular.z:.3f} rad/s | 目前 Y 軸偏差: {self.latest_target_y*100:.2f} cm",
                 throttle_duration_sec=0.5
             )
 
@@ -227,7 +294,21 @@ class GrabExecutor(Node):
             self.arm.send_goal(release_pose, duration=0.5, teleop_mode=False)
             
             time.sleep(1.0)
-            self.get_logger().info("🎉 夾取與防燒毀動作執行完畢！程式即將結束。")
+            self.get_logger().info("🎉 夾取與防燒毀動作執行完畢！")
+            
+            # 3. 移動至第三點位 (slot '3'，例如抬起或運送位置)
+            if "3" in self.saved_poses:
+                self.get_logger().info("🦾 正在移動手臂至第三點位 (slot '3' 抬起/運送位置)...")
+                target_pose_3 = self.saved_poses["3"]
+                self.arm.target_positions = list(target_pose_3)
+                self.arm.send_goal(target_pose_3, duration=2.0, teleop_mode=False)
+                # 等待手臂與夾爪抵達 (2.0秒移動時間 + 0.5秒緩衝)
+                time.sleep(2.5)
+                self.get_logger().info("✅ 手臂已抵達第三點位。")
+            else:
+                self.get_logger().warning("⚠️ 找不到第三點位 (slot '3')，跳過此步驟。")
+                
+            self.get_logger().info("🎉 所有動作執行完畢！程式即將結束。")
             self.state = 'DONE'
             
             # 延遲關閉節點，確保所有命令都已完整執行並送出
