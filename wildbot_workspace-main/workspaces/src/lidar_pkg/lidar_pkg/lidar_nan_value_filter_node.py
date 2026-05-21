@@ -23,6 +23,10 @@ class LidarNanValueFilterNode(Node):
                 "-180:-135:0.45",
             ],
         )
+        self.declare_parameter("outlier_filter_enabled", True)
+        self.declare_parameter("outlier_max_neighbor_diff", 0.2)
+        self.declare_parameter("outlier_window_size", 2)
+        self.declare_parameter("outlier_min_neighbors", 1)
 
         self.use_inf_for_invalid = self.get_parameter("use_inf_for_invalid").value
         self.replace_nan = self.get_parameter("replace_nan").value
@@ -31,6 +35,10 @@ class LidarNanValueFilterNode(Node):
         self.self_mask_sectors = self._parse_sectors(
             self.get_parameter("self_mask_sectors").value
         )
+        self.outlier_filter_enabled = self.get_parameter("outlier_filter_enabled").value
+        self.outlier_max_neighbor_diff = self.get_parameter("outlier_max_neighbor_diff").value
+        self.outlier_window_size = self.get_parameter("outlier_window_size").value
+        self.outlier_min_neighbors = self.get_parameter("outlier_min_neighbors").value
 
         input_topic = self.get_parameter("input_topic").value
         output_topic = self.get_parameter("output_topic").value
@@ -45,7 +53,8 @@ class LidarNanValueFilterNode(Node):
 
         self.get_logger().info(
             f"Filtering LaserScan {input_topic} -> {output_topic}; "
-            f"self mask sectors: {self.self_mask_sectors}"
+            f"self mask sectors: {self.self_mask_sectors}; "
+            f"outlier filter: {self.outlier_filter_enabled} (diff={self.outlier_max_neighbor_diff}, window={self.outlier_window_size}, min={self.outlier_min_neighbors})"
         )
 
     def _parse_sectors(self, sector_specs):
@@ -95,8 +104,42 @@ class LidarNanValueFilterNode(Node):
             else:
                 ranges.append(value)
 
+        if self.outlier_filter_enabled:
+            ranges = self._filter_outliers(ranges)
+
         filtered_msg.ranges = ranges
         self.publisher.publish(filtered_msg)
+
+    def _filter_outliers(self, ranges):
+        n = len(ranges)
+        filtered_ranges = list(ranges)
+        invalid_value = math.inf if self.use_inf_for_invalid else 0.0
+
+        K = self.outlier_window_size
+        max_diff = self.outlier_max_neighbor_diff
+        min_support = self.outlier_min_neighbors
+
+        for i in range(n):
+            val = ranges[i]
+            if not math.isfinite(val) or val <= 0.0 or val == invalid_value:
+                continue
+
+            support = 0
+            for offset in range(-K, K + 1):
+                if offset == 0:
+                    continue
+                neighbor_idx = (i + offset) % n
+                neighbor_val = ranges[neighbor_idx]
+                if math.isfinite(neighbor_val) and neighbor_val > 0.0 and neighbor_val != invalid_value:
+                    if abs(val - neighbor_val) <= max_diff:
+                        support += 1
+                        if support >= min_support:
+                            break
+
+            if support < min_support:
+                filtered_ranges[i] = invalid_value
+
+        return filtered_ranges
 
     def _should_replace_invalid(self, value, scan_msg):
         if self.replace_nan and not math.isfinite(value):

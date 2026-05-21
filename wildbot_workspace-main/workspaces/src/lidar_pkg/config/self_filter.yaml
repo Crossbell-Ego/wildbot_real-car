@@ -14,3 +14,9 @@ lidar_nan_value_filter_node:
     self_mask_enabled: true
     self_mask_sectors:
       - "95:220:1.1"
+
+    # Outlier filter to clean up grainy noise and wall-penetration particles
+    outlier_filter_enabled: true
+    outlier_max_neighbor_diff: 0.2
+    outlier_window_size: 2
+    outlier_min_neighbors: 1

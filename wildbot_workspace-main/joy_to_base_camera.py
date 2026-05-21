@@ -22,6 +22,7 @@ class JoyBaseCameraGripper(Node):
         # =========================
         self.cmd_vel_topic = '/base_controller/cmd_vel'
         self.joy_topic = '/joy'
+        self.nav_cmd_topic = '/nav2/cmd_vel'
 
         # =========================
         # Speed settings
@@ -30,6 +31,8 @@ class JoyBaseCameraGripper(Node):
         self.max_angular_z = 0.4      # 原地旋轉速度 rad/s (已調慢)
         self.deadzone = 0.08
         self.emergency_stop_button = 6  # L1 / LB
+        self.nav_pause_button = 7       # Start / Menu 鍵用來切換導航暫停/恢復
+        self.nav_paused = False
 
         # =========================
         # Arm fixed pose
@@ -67,6 +70,13 @@ class JoyBaseCameraGripper(Node):
             self.joy_topic,
             self.joy_callback,
             joy_qos
+        )
+
+        self.nav_sub = self.create_subscription(
+            TwistStamped,
+            self.nav_cmd_topic,
+            self.nav_cmd_callback,
+            10
         )
 
 
@@ -182,6 +192,19 @@ class JoyBaseCameraGripper(Node):
             self.last_axes = list(msg.axes)
             return
 
+        # 導航暫停/恢復切換邏輯 (Xbox Start 鍵，按鈕 7)
+        if self.button_pressed(msg, self.nav_pause_button):
+            self.nav_paused = not self.nav_paused
+            if self.nav_paused:
+                self.get_logger().warn('⏸️ 導航已暫停！小車已停止移動')
+                self.stop_base_now()
+            else:
+                self.get_logger().info('▶️ 導航已恢復！小車可繼續導航')
+            
+            self.last_buttons = list(msg.buttons)
+            self.last_axes = list(msg.axes)
+            return
+
         # 如果處於即停鎖定狀態，直接無視後續所有手把輸入 (底盤、手臂、夾爪)
         if self.emergency_stop_active:
             self.last_buttons = list(msg.buttons)
@@ -200,10 +223,10 @@ class JoyBaseCameraGripper(Node):
             last_ax6 = self.last_axes[6] if self.last_axes and len(self.last_axes) > 6 else 0.0
             last_ax7 = self.last_axes[7] if self.last_axes and len(self.last_axes) > 7 else 0.0
             
-            # axes[7] 控制前後速度限制：下鍵 1.0 (減速)，上鍵 -1.0 (加速)
-            if last_ax7 != -1.0 and msg.axes[7] == -1.0:
+            # axes[7] 控制前後速度限制：上鍵 1.0 (加速)，下鍵 -1.0 (減速)
+            if last_ax7 != 1.0 and msg.axes[7] == 1.0:
                 dpad_up_pressed = True
-            elif last_ax7 != 1.0 and msg.axes[7] == 1.0:
+            elif last_ax7 != -1.0 and msg.axes[7] == -1.0:
                 dpad_down_pressed = True
                 
             # axes[6] 控制自轉速度限制：左鍵 1.0 (加速)，右鍵 -1.0 (減速)
@@ -321,6 +344,37 @@ class JoyBaseCameraGripper(Node):
 
         self.last_buttons = list(msg.buttons)
         self.last_axes = list(msg.axes)
+
+    # =========================
+    # Nav2 command forwarding callback
+    # =========================
+    def nav_cmd_callback(self, msg):
+        """
+        接收來自 Nav2 的速度指令。
+        如果處於急停鎖定、手把正在手動控制、或導航已暫停，則不予轉發。
+        """
+        if self.emergency_stop_active:
+            return
+
+        if self.nav_paused:
+            self.stop_base_now()
+            return
+
+        # 檢查手把是否正在被動手手動控制
+        is_joy_moving = (
+            abs(self.current_twist.twist.linear.x) > 0.01 or
+            abs(self.current_twist.twist.angular.z) > 0.01
+        )
+        if is_joy_moving:
+            # 遙控優先，不轉發導航速度
+            return
+
+        # 轉發 Nav2 指令
+        forward_msg = TwistStamped()
+        forward_msg.header.frame_id = msg.header.frame_id
+        forward_msg.header.stamp = self.get_clock().now().to_msg()
+        forward_msg.twist = msg.twist
+        self.cmd_pub.publish(forward_msg)
 
     # =========================
     # Base command
