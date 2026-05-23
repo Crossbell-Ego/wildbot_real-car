@@ -103,7 +103,13 @@ def generate_launch_description():
             plugin="orbbec_camera::OBCameraNodeDriver",
             name=LaunchConfiguration("camera_name"),
             namespace="",
-            parameters=parameters,
+            parameters=parameters + [
+                {"color.image_raw.enable_pub_plugins": ["image_transport/raw"]},
+                {"color.image_raw_raw.enable_pub_plugins": ["image_transport/raw"]}
+            ],
+            remappings=[
+                ('color/image_raw', 'color/image_raw_raw')
+            ]
         )
         # Define the ComposableNodeContainer
         container = ComposableNodeContainer(

@@ -24,10 +24,11 @@ class GrabExecutor(Node):
         self.last_print_time = 0.0  # 用於限制終端機列印頻率
         self.state = 'IDLE'  # 可為: IDLE, WAIT_YOLO, ROTATING, ALIGNING, DONE
         self.factor = 1.0    # 打滑補償係數 (例如在草地上設為 1.2)
-        self.distance_offset = -0.05  # 距離補償值 (公尺)，負值代表少走 (例如 -0.02 代表少走 2 公分)，可用於修正移動過頭的問題
+        self.distance_offset = -0.08 # 距離補償值 (公尺)，負值代表少走 (例如 -0.02 代表少走 2 公分)，可用於修正移動過頭的問題
         
         # YOLO 目標物對齊與旋轉相關變數
         self.target_class_name = None
+        self.target_visible = True       # 追蹤目標物是否仍在相機視野中
         self.latest_target_y = 0.0
         self.latest_target_x = 0.0
         self.target_y_threshold = 0.02  # 左右對齊閾值 (公尺)，當 |y| 小於此值時視為對齊中心
@@ -36,7 +37,7 @@ class GrabExecutor(Node):
         
         # 底盤控制狀態變數
         self.target_chassis_dist = 0.0
-        self.chassis_speed = 0.05
+        self.chassis_speed = 0.12
         self.chassis_start_x = None
         self.chassis_start_y = None
         self.current_x = None
@@ -89,23 +90,35 @@ class GrabExecutor(Node):
 
     def detections_callback(self, msg):
         """接收 YOLO 3D 的偵測結果並判斷是否執行對齊。"""
-        if not msg.detections:
-            return
-            
-        # 若移至第二點位或已完成，直接返回，避免頻繁的終端機列印與排版阻塞或洗板
+        # 若移至第二點位或已完成，直接返回
         if self.state in ['MOVING_TO_SLOT_2', 'DONE']:
             return
 
         # 1. 旋轉對齊模式 (ROTATING) 與前後移動對齊模式 (ALIGNING)：持續更新鎖定目標物的實時座標
         if self.state in ['ROTATING', 'ALIGNING']:
             target_det = None
-            for det in msg.detections:
-                if det.class_name == self.target_class_name and det.score >= 0.5:
-                    target_det = det
-                    break
+            if msg.detections:
+                for det in msg.detections:
+                    if det.class_name == self.target_class_name and det.score >= 0.5:
+                        target_det = det
+                        break
             if target_det is not None:
                 self.latest_target_y = target_det.bbox3d.center.position.y
                 self.latest_target_x = target_det.bbox3d.center.position.x
+                if not self.target_visible:
+                    self.target_visible = True
+                    self.get_logger().info("👁️ 目標物重新出現在視野中，恢復實時更新座標")
+            else:
+                # 目標消失（進入盲區），保留記憶中的最後座標，不清零
+                if self.target_visible:
+                    self.target_visible = False
+                    self.get_logger().info(
+                        f"🔇 目標物離開視野（盲區），使用記憶位置繼續：X={self.latest_target_x*100:.1f} cm, Y={self.latest_target_y*100:.1f} cm"
+                    )
+            return
+
+        # 2. 其餘狀態若偵測為空直接返回
+        if not msg.detections:
             return
 
         # 2. 若非處於等待偵測狀態，僅維持實時顯示資訊
@@ -239,14 +252,8 @@ class GrabExecutor(Node):
             # 繼續移動
             msg.twist.linear.x = self.chassis_speed
             
-            # 實時左右偏差校正 (走直線時的微調)
-            # 設定一個較小的死區 (0.005m = 0.5 cm) 讓直線修正更靈敏
-            if abs(self.latest_target_y) > 0.005:
-                # 使用比例控制 (P-controller) 進行平滑轉向修正，限制最大校正角速度為 self.rotation_speed
-                raw_yaw_cmd = self.align_kp * self.latest_target_y
-                msg.twist.angular.z = max(-self.rotation_speed, min(self.rotation_speed, raw_yaw_cmd))
-            else:
-                msg.twist.angular.z = 0.0
+            # 邊走邊校正功能已取消，保持直線前進
+            msg.twist.angular.z = 0.0
                 
             self.cmd_pub.publish(msg)
             self.get_logger().info(
@@ -305,6 +312,33 @@ class GrabExecutor(Node):
                 # 等待手臂與夾爪抵達 (2.0秒移動時間 + 0.5秒緩衝)
                 time.sleep(2.5)
                 self.get_logger().info("✅ 手臂已抵達第三點位。")
+                
+                # 3.5. 夾取與舉升完成後，小車安全後退離區
+                self.get_logger().info("🚗 夾取與舉升完成，小車啟動安全後退離區...")
+                backup_dist = 0.25  # 後退距離 (25 公分)
+                start_x = self.current_x
+                start_y = self.current_y
+                if start_x is not None and start_y is not None:
+                    twist_msg = TwistStamped()
+                    twist_msg.header.frame_id = 'base_link'
+                    
+                    while rclpy.ok():
+                        twist_msg.header.stamp = self.get_clock().now().to_msg()
+                        twist_msg.twist.linear.x = -0.08  # 後退速度: 8 cm/s
+                        twist_msg.twist.angular.z = 0.0
+                        
+                        dx = self.current_x - start_x
+                        dy = self.current_y - start_y
+                        dist = math.hypot(dx, dy)
+                        
+                        if dist >= backup_dist:
+                            break
+                            
+                        self.cmd_pub.publish(twist_msg)
+                        time.sleep(0.05)
+                        
+                    self.stop_chassis()
+                    self.get_logger().info("✅ 安全後退完成。")
             else:
                 self.get_logger().warning("⚠️ 找不到第三點位 (slot '3')，跳過此步驟。")
                 

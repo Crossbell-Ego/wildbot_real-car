@@ -19,7 +19,13 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'ik_node = arm_ik.ik_node:main'
+            'ik_node = arm_ik.ik_node:main',
+            'calibration_tool = arm_ik.calibration_tool:main',
+            'camera_calibration = arm_ik.camera_calibration:main',
+            'grab_teach = arm_ik.grab_teach:main',
+            'nav_teach = arm_ik.nav_teach:main',
+            'grab_execute = arm_ik.grab_execute:main',
+            'nav_execute = arm_ik.nav_execute:main'
         ],
     },
 )

@@ -14,7 +14,7 @@ amcl:
     lambda_short: 0.1
     laser_likelihood_max_dist: 2.0
     laser_max_range: 100.0
-    laser_min_range: -1.0
+    laser_min_range: 0.50
     laser_model_type: "likelihood_field"
     max_beams: 60
     max_particles: 2000
@@ -72,9 +72,9 @@ controller_server:
     enable_stamped_cmd_vel: true
     costmap_update_timeout: 0.30
     min_x_velocity_threshold: 0.001
-    min_y_velocity_threshold: 0.5
+    min_y_velocity_threshold: 0.0
     min_theta_velocity_threshold: 0.001
-    failure_tolerance: 0.3
+    failure_tolerance: 2.0
     progress_checker_plugins: ["progress_checker"]
     goal_checker_plugins: ["general_goal_checker"] # "precise_goal_checker"
     controller_plugins: ["FollowPath"]
@@ -97,7 +97,13 @@ controller_server:
       xy_goal_tolerance: 0.25
       yaw_goal_tolerance: 0.35
     FollowPath:
-      plugin: "nav2_mppi_controller::MPPIController"
+      plugin: "nav2_rotation_shim_controller::RotationShimController"
+      primary_controller: "nav2_mppi_controller::MPPIController"
+      angular_dist_threshold: 0.3925
+      forward_sampling_distance: 0.5
+      rotate_to_heading_angular_vel: 0.8
+      max_angular_accel: 1.5
+      rotate_to_goal_heading: true
       time_steps: 56
       model_dt: 0.05
       batch_size: 2000
@@ -107,12 +113,12 @@ controller_server:
       ay_min: -3.0
       az_max: 3.5
       vx_std: 0.2
-      vy_std: 0.2
+      vy_std: 0.0
       wz_std: 0.4
-      vx_max: 0.5
-      vx_min: -0.35
-      vy_max: 0.5
-      wz_max: 1.9
+      vx_max: 0.25
+      vx_min: -0.25
+      vy_max: 0.0
+      wz_max: 1.5
       iteration_count: 1
       prune_distance: 1.7
       transform_tolerance: 0.1
@@ -152,17 +158,17 @@ controller_server:
       CostCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 3.81
+        cost_weight: 10.0
         near_collision_cost: 253
         critical_cost: 300.0
-        consider_footprint: false
+        consider_footprint: true
         collision_cost: 1000000.0
         near_goal_distance: 1.0
         trajectory_point_step: 2
       PathAlignCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 14.0
+        cost_weight: 6.0
         max_path_occupancy_ratio: 0.05
         trajectory_point_step: 4
         threshold_to_consider: 0.5
@@ -190,8 +196,8 @@ controller_server:
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 5.0
-      publish_frequency: 2.0
+      update_frequency: 10.0
+      publish_frequency: 4.0
       global_frame: odom
       robot_base_frame: base_footprint
       rolling_window: true
@@ -199,12 +205,12 @@ local_costmap:
       height: 3
       resolution: 0.05
       # robot_radius: 0.22
-      footprint: "[[-0.18, -0.15], [-0.18, 0.15], [0.18, 0.15], [0.18, -0.15]]"
+      footprint: "[[-0.30, -0.20], [-0.30, 0.20], [0.30, 0.20], [0.30, -0.20]]"
       plugins: ["voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.35
+        cost_scaling_factor: 1.5
+        inflation_radius: 0.70
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True
@@ -222,9 +228,9 @@ local_costmap:
           marking: True
           data_type: "LaserScan"
           raytrace_max_range: 3.0
-          raytrace_min_range: 0.0
+          raytrace_min_range: 0.50
           obstacle_max_range: 2.5
-          obstacle_min_range: 0.0
+          obstacle_min_range: 0.50
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
@@ -233,12 +239,12 @@ local_costmap:
 global_costmap:
   global_costmap:
     ros__parameters:
-      update_frequency: 1.0
-      publish_frequency: 1.0
+      update_frequency: 3.0
+      publish_frequency: 3.0
       global_frame: map
       robot_base_frame: base_footprint
       # robot_radius: 0.22
-      footprint: "[[-0.18, -0.15], [-0.18, 0.15], [0.18, 0.15], [0.18, -0.15]]"
+      footprint: "[[-0.30, -0.20], [-0.30, 0.20], [0.30, 0.20], [0.30, -0.20]]"
       resolution: 0.05
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
@@ -253,16 +259,16 @@ global_costmap:
           marking: True
           data_type: "LaserScan"
           raytrace_max_range: 3.0
-          raytrace_min_range: 0.0
+          raytrace_min_range: 0.50
           obstacle_max_range: 2.5
-          obstacle_min_range: 0.0
+          obstacle_min_range: 0.50
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.35
+        cost_scaling_factor: 1.5
+        inflation_radius: 0.70
       always_send_full_costmap: True
 
 # The yaml_filename does not need to be specified since it going to be set by defaults in launch.
@@ -368,8 +374,8 @@ velocity_smoother:
     stamp_smoothed_velocity_with_smoothing_time: False
     scale_velocities: False
     feedback: "OPEN_LOOP"
-    max_velocity: [0.5, 0.0, 2.0]
-    min_velocity: [-0.5, 0.0, -2.0]
+    max_velocity: [0.25, 0.0, 1.5]
+    min_velocity: [-0.25, 0.0, -1.5]
     max_accel: [2.5, 0.0, 3.2]
     max_decel: [-2.5, 0.0, -3.2]
     odom_topic: "/base_controller/odom"
@@ -391,7 +397,14 @@ collision_monitor:
     stop_pub_timeout: 2.0
     # Polygons represent zone around the robot for "stop", "slowdown" and "limit" action types,
     # and robot footprint for "approach" action type.
-    polygons: ["FootprintApproach"]
+    polygons: ["StopZone", "FootprintApproach"]
+    StopZone:
+      type: "polygon"
+      points: "[[-0.32, -0.22], [-0.32, 0.22], [0.32, 0.22], [0.32, -0.22]]"
+      action_type: "stop"
+      min_points: 3
+      visualize: True
+      enabled: False
     FootprintApproach:
       type: "polygon"
       action_type: "approach"

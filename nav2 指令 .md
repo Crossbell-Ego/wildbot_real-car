@@ -19,10 +19,14 @@
 
 ## 🚀 第一步：啟動 Nav2 導航堆疊
 
-在 Host 開啟一個新的終端機視窗，執行工作空間下的 `nav2.sh` 腳本，並指定您要載入的地圖路徑（地圖路徑以容器內路徑為準，預設地圖通常放在 `/workspaces/maps/`）：
+在 Host 開啟一個新的終端機視窗，先進入 Docker 開發容器，再執行工作空間下的 `nav2.sh` 腳本（地圖路徑以容器內路徑為準，預設地圖通常放在 `/workspaces/maps/`）：
 
 ```bash
 cd "/home/robot/wildbot_real car/wildbot_workspace-main"
+# 1. 啟動並進入主容器終端機
+sudo ./launch_shell.sh
+
+# 2. 進入容器後，執行導航腳本並指定地圖
 ./nav2.sh /workspaces/maps/my_map.yaml
 ```
 
