@@ -26,6 +26,10 @@ cd "/home/robot/wildbot_real car/wildbot_workspace-main"
 # 1. 啟動並進入主容器終端機
 sudo ./launch_shell.sh
 
+
+    docker exec -it compose-kros_car-1 bash
+
+
 # 2. 進入容器後，執行導航腳本並指定地圖
 ./nav2.sh /workspaces/maps/my_map.yaml
 ```
@@ -47,8 +51,13 @@ Nav2 導航節點就緒後，必須給予小車初始位置，AMCL 定位系統�
 
 *   **方法二：使用終端機指令設定（適用於快速重置/自動化）**
     另開一個終端機，執行 `sudo ./launch_shell.sh` 進入容器內，執行：
+
     ```bash
+    
+    docker exec -it compose-kros_car-1 bash
+    
     source install/setup.bash
+    
     ros2 topic pub -1 /initialpose geometry_msgs/msg/PoseWithCovarianceStamped '{header: {frame_id: "map"}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}}'
     ```
 

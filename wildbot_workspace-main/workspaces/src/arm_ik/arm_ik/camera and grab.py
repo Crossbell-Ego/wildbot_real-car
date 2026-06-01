@@ -23,8 +23,8 @@ class GrabExecutor(Node):
         
         self.last_print_time = 0.0  # 用於限制終端機列印頻率
         self.state = 'IDLE'  # 可為: IDLE, WAIT_YOLO, ROTATING, ALIGNING, DONE
-        self.factor = 1.0    # 打滑補償係數 (例如在草地上設為 1.2)
-        self.distance_offset = -0.08 # 距離補償值 (公尺)，負值代表少走 (例如 -0.02 代表少走 2 公分)，可用於修正移動過頭的問題
+        self.factor = 0.9615    # 打滑補償係數 (例如在草地上設為 1.2)
+        self.distance_offset = 0.0      # 距離補償值 (公尺)，負值代表少走 (例如 -0.02 代表少走 2 公分)，可用於修正移動過頭的問題
         
         # YOLO 目標物對齊與旋轉相關變數
         self.target_class_name = None
@@ -97,11 +97,14 @@ class GrabExecutor(Node):
         # 1. 旋轉對齊模式 (ROTATING) 與前後移動對齊模式 (ALIGNING)：持續更新鎖定目標物的實時座標
         if self.state in ['ROTATING', 'ALIGNING']:
             target_det = None
+            min_dist = float('inf')
             if msg.detections:
                 for det in msg.detections:
                     if det.class_name == self.target_class_name and det.score >= 0.5:
-                        target_det = det
-                        break
+                        # 如果有兩隻相同的熊，追蹤距離最近的那隻
+                        if det.bbox3d.center.position.x < min_dist:
+                            min_dist = det.bbox3d.center.position.x
+                            target_det = det
             if target_det is not None:
                 self.latest_target_y = target_det.bbox3d.center.position.y
                 self.latest_target_x = target_det.bbox3d.center.position.x
@@ -126,12 +129,14 @@ class GrabExecutor(Node):
             self.print_detection_status(msg)
             return
 
-        # 3. 等待目標物模式 (WAIT_YOLO)：尋找第一個信心度 >= 0.7 的目標物
+        # 3. 等待目標物模式 (WAIT_YOLO)：尋找信心度 >= 0.7 且距離最近的目標物
         target_det = None
+        min_dist = float('inf')
         for det in msg.detections:
             if det.score >= 0.7:
-                target_det = det
-                break
+                if det.bbox3d.center.position.x < min_dist:
+                    min_dist = det.bbox3d.center.position.x
+                    target_det = det
 
         if target_det is None:
             return
@@ -220,7 +225,7 @@ class GrabExecutor(Node):
                 msg.header.stamp = self.get_clock().now().to_msg()
                 msg.header.frame_id = 'base_link'
                 msg.twist.linear.x = 0.0
-                # 如果 y > 0 (偏左)，小車應逆時針轉 (angular.z > 0)；如果 y < 0 (偏右)，小車應順時針轉 (angular.z < 0)
+                # 修正轉向：目標在左邊 (Y > 0) 時，angular.z 應為正值 (向左轉)
                 msg.twist.angular.z = self.rotation_speed if self.latest_target_y > 0 else -self.rotation_speed
                 self.cmd_pub.publish(msg)
                 self.get_logger().info(
@@ -450,7 +455,7 @@ def main():
         # 預設模式：自動對齊與打滑補償模式
         # 可帶入單一浮點數作為打滑補償係數，例如：python3 "camera and grab.py" 1.2
         # 若在草地執行，預設值為 1.29 ；一般路面請手動傳入 1.0
-        factor = 1.29
+        factor = 0.9091
         if len(sys.argv) > 1:
             try:
                 factor = float(sys.argv[1])

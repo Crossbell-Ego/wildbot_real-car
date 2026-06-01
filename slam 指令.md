@@ -19,10 +19,10 @@
 
 ## 🚀 第一步：啟動 SLAM 建圖與手把遙控
 
-在 Host 開啟一個新的終端機視窗，執行工作空間下的 `slam.sh` 腳本：
+在 Host 開啟一個新的終端機視窗，先進入容器，再執行容器內的 `slam.sh` 腳本：
 
 ```bash
-cd "/home/robot/wildbot_real car/wildbot_workspace-main"
+docker exec -it compose-kros_car-1 bash
 ./slam.sh
 ```
 

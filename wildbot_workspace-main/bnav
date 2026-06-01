@@ -1,0 +1,12 @@
+#!/bin/bash
+# 🤖 Wildbot 自動過橋快速啟動指令
+
+# 1. 確保載入 ROS2 環境變數
+if [ -f "/workspaces/install/setup.bash" ]; then
+    source /workspaces/install/setup.bash
+else
+    source /opt/ros/jazzy/setup.bash
+fi
+
+# 2. 執行過橋導航 Python 節點，並傳遞所有輸入參數
+python3 /workspaces/bridge_navigation.py "$@"

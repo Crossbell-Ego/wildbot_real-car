@@ -53,7 +53,10 @@ if [ -f /.dockerenv ]; then
     sleep 5
     echo "📍 2. 正在發布起跑點初始定位 (Initial Pose) 至 (0,0)..."
     source /workspaces/install/setup.bash
-    ros2 topic pub -1 -w 0 /initialpose geometry_msgs/msg/PoseWithCovarianceStamped '{header: {frame_id: "map"}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}}'
+    for i in {1..5}; do
+        ros2 topic pub --once -w 0 /initialpose geometry_msgs/msg/PoseWithCovarianceStamped '{header: {frame_id: "map"}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}}' >/dev/null 2>&1
+        sleep 1
+    done
     
     # 3. 啟動 YOLO 3D
     echo "⏳ 3. 正在啟動 YOLO 3D 辨識..."
@@ -61,6 +64,13 @@ if [ -f /.dockerenv ]; then
     YOLO_PID=$!
     echo "✅ YOLO 3D 啟動指令已送出 (背景 PID: $YOLO_PID)"
     
+    # 4. 啟動手把遙控與速度轉發 (teleop)
+    echo "⏳ 4. 正在啟動手把遙控與轉發系統..."
+    nohup ./teleop.sh > /tmp/teleop.log 2>&1 &
+    TELEOP_PID=$!
+    echo "✅ 手把遙控與轉發系統啟動指令已送出 (背景 PID: $TELEOP_PID)"
+    
+
     # 4. 驗證所有服務是否轉為 Active 狀態
     echo -n "⏳ 正在驗證 Nav2 與 YOLO 3D 是否成功啟動並啟動完畢"
     ALL_READY=false
@@ -106,12 +116,21 @@ else
     echo "⏳ 等待 5 秒以利訂閱註冊..."
     sleep 5
     echo "📍 2. 正在發布起跑點初始定位 (Initial Pose) 至 (0,0)..."
-    docker exec "$CONTAINER_NAME" bash -c "source /workspaces/install/setup.bash && ros2 topic pub -1 -w 0 /initialpose geometry_msgs/msg/PoseWithCovarianceStamped '{header: {frame_id: \"map\"}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}}'"
+    for i in {1..5}; do
+        docker exec "$CONTAINER_NAME" bash -c "source /workspaces/install/setup.bash && ros2 topic pub --once -w 0 /initialpose geometry_msgs/msg/PoseWithCovarianceStamped '{header: {frame_id: \"map\"}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}}'" >/dev/null 2>&1
+        sleep 1
+    done
     
     # 3. 啟動 YOLO 3D
     echo "⏳ 3. 正在透過 Docker 啟動 YOLO 3D 辨識..."
     docker exec -d "$CONTAINER_NAME" bash -c "cd /workspaces && ./yolo_3d.sh > /tmp/yolo_3d.log 2>&1"
     echo "✅ YOLO 3D 啟動指令已送出"
+    
+    # 4. 啟動手把遙控與速度轉發 (teleop)
+    echo "⏳ 4. 正在透過 Docker 啟動手把遙控與轉發系統..."
+    docker exec -d "$CONTAINER_NAME" bash -c "cd /workspaces && ./teleop.sh > /tmp/teleop.log 2>&1"
+    echo "✅ 手把遙控與轉發系統啟動指令已送出"
+    
     
     # 4. 驗證所有服務是否轉為 Active 狀態
     echo -n "⏳ 正在驗證 Nav2 與 YOLO 3D 是否成功啟動並啟動完畢"

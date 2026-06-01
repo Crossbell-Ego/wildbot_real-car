@@ -13,7 +13,7 @@ lidar_nan_value_filter_node:
     # Wildbot that appear as fixed close-range returns.
     self_mask_enabled: true
     self_mask_sectors:
-      - "95:220:1.1"
+      - "95:240:1.0"
 
     # Outlier filter to clean up grainy noise and wall-penetration particles
     outlier_filter_enabled: true

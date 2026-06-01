@@ -5,6 +5,7 @@ import json
 import os
 import sys
 import time
+import math
 
 from geometry_msgs.msg import PoseStamped
 from nav2_msgs.action import NavigateToPose

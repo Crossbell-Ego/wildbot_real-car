@@ -445,7 +445,7 @@ def main():
     
     # 固定參數設定（目標標籤固定為 'bear'）
     approach_dist = 0.38  # 導航停留距離 (公尺)
-    slip_factor = 1.0     # 夾取打滑補償
+    slip_factor = 0.9615     # 夾取打滑補償
     
     # 支援命令列參數調整 approach_dist 與 slip_factor
     if len(sys.argv) > 1:
