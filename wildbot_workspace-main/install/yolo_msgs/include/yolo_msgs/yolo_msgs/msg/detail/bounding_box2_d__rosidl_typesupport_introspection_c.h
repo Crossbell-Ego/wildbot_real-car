@@ -1,1 +1,0 @@
-/workspaces/build/yolo_msgs/rosidl_typesupport_introspection_c/yolo_msgs/msg/detail/bounding_box2_d__rosidl_typesupport_introspection_c.h

@@ -1,1 +1,0 @@
-/workspaces/build/yolo_msgs/ament_cmake_core/yolo_msgsConfig-version.cmake

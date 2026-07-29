@@ -1,1 +1,0 @@
-/workspaces/build/wildbot_localization/ament_cmake_core/wildbot_localizationConfig-version.cmake

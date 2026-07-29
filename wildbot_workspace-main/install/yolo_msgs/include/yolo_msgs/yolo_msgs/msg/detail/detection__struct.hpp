@@ -1,1 +1,0 @@
-/workspaces/build/yolo_msgs/rosidl_generator_cpp/yolo_msgs/msg/detail/detection__struct.hpp

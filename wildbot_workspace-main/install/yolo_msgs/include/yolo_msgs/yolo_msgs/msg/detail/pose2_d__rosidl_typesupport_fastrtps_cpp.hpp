@@ -1,1 +1,0 @@
-/workspaces/build/yolo_msgs/rosidl_typesupport_fastrtps_cpp/yolo_msgs/msg/detail/pose2_d__rosidl_typesupport_fastrtps_cpp.hpp

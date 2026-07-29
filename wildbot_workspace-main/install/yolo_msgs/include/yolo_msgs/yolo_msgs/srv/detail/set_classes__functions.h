@@ -1,1 +1,0 @@
-/workspaces/build/yolo_msgs/rosidl_generator_c/yolo_msgs/srv/detail/set_classes__functions.h

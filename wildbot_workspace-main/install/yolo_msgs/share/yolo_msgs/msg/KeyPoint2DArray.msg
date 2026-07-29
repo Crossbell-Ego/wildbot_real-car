@@ -1,1 +1,0 @@
-/workspaces/workspaces/src/yolo_ros-main/yolo_msgs/msg/KeyPoint2DArray.msg
